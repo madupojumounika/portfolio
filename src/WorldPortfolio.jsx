@@ -41,7 +41,7 @@ function EarthPlanet({ onEnter }) {
     <Html position={[0,-1.35,0]} center distanceFactor={8}><button className="earth-enter" onClick={onEnter}>ENTER EARTH <ArrowUpRight size={13}/></button></Html>
   </group>;
 }
-function SolarSystem({ onEnter }) {
+function EarthOrbit({ onEnter }) {\n  const orbit=useRef();\n  useFrame((_,dt)=>{if(orbit.current)orbit.current.rotation.y+=dt*.22;});\n  return <group ref={orbit} position={[5.65,0,0]}><EarthPlanet onEnter={onEnter}/></group>;\n}\nfunction SolarSystem({ onEnter }) {
   const system=useRef();
   useFrame((_,dt)=>{if(system.current)system.current.rotation.y+=dt*.012;});
   return <Canvas camera={{position:[0,8.5,19],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:false,powerPreference:"high-performance"}}>
@@ -54,7 +54,7 @@ function SolarSystem({ onEnter }) {
       {[2.1,3.2,4.4,5.65,7.1,8.6,10.2].map(r=><OrbitPath key={r} radius={r}/>)}
       <Planet radius={2.1} size={.17} color="#a9a9a2" speed={.48} seed={.3}/>
       <Planet radius={3.2} size={.28} color="#d4a66f" speed={.31} seed={1.5}/>
-      <group position={[5.65,0,0]}><Planet radius={0} size={.43} color="#367ac4" speed={.22} seed={.8}/><EarthPlanet onEnter={onEnter}/></group>
+      <EarthOrbit onEnter={onEnter}/>
       <Planet radius={7.1} size={.31} color="#b75c42" speed={.17} seed={2.1}/>
       <Planet radius={8.6} size={.75} color="#c69a70" speed={.105} seed={3.1} ring/>
       <Planet radius={10.2} size={.58} color="#8bc5cf" speed={.075} seed={4.1} ring/>
