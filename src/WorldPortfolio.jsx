@@ -1,115 +1,98 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import * as THREE from "three";
 import { Html, OrbitControls, Stars } from "@react-three/drei";
-import { ArrowUpRight, Compass, Github, Linkedin, Mail, Mouse, Move, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import * as THREE from "three";
+import { ArrowLeft, ArrowUpRight, Github, Linkedin, Mail, X } from "lucide-react";
 
-const districts = [
-  { id: "story", number: "01", name: "Origin District", eyebrow: "THE STORY", color: "#73c9ff", description: "A curious builder from Hyderabad, learning by turning ideas into things people can use.", detail: "I'm Mounika Madupoju, a B.Tech CSE (AI & ML) student at Bharat Institute of Engineering & Technology, graduating in 2028. My focus is building thoughtful web experiences and practical software.", facts: ["B.Tech CSE (AI & ML)", "BIET · Hyderabad", "Class of 2028"] },
-  { id: "skills", number: "02", name: "Skills Lab", eyebrow: "THE TOOLKIT", color: "#a78bfa", description: "A growing workshop of languages, interfaces and full-stack foundations.", detail: "I enjoy working across the web stack, from shaping responsive interfaces to understanding the APIs and data behind them. I keep learning by building and experimenting.", facts: ["HTML · CSS · JavaScript", "Java · C · Python basics", "React · Node.js · MongoDB (project experience)"] },
-  { id: "projects", number: "03", name: "Innovation Quarter", eyebrow: "SELECTED BUILDS", color: "#72e0bd", description: "Real problems, working prototypes, and ideas that keep evolving.", detail: "Explore a few projects where I have been learning product thinking, frontend engineering, backend APIs and integration.", facts: ["PayPilot — assisted purchasing with budget guardrails", "MedLink — emergency referral coordination concept", "Code Mentor — coding interview practice", "CareerX — opportunities community"] },
-  { id: "journey", number: "04", name: "Milestone Island", eyebrow: "THE JOURNEY", color: "#ffbf69", description: "Small milestones that mark a bigger learning journey.", detail: "I value hands-on learning, team collaboration and showing up for challenges. Each experience has helped me become a more thoughtful developer.", facts: ["Smart India Hackathon · BIET internal Top 45", "TCS iON Career Edge", "JPMorgan Chase Software Engineering simulation · Forage", "Campus and community initiatives"] },
-  { id: "contact", number: "05", name: "Connection Hub", eyebrow: "LET'S BUILD", color: "#ff8e9e", description: "Have a project, opportunity or interesting problem? Let's talk.", detail: "I'm open to connecting with developers, teams and people building useful things. Reach out and let's see what we can create.", facts: ["Open to software development opportunities", "Collaboration · Internships · Projects"] }
+const worlds = [
+  { id:"story", n:"01", name:"My Origin", title:"The person behind the universe", color:"#77caff", desc:"I'm Mounika Madupoju, a B.Tech CSE (AI & ML) student at Bharat Institute of Engineering & Technology, Hyderabad, graduating in 2028.", facts:["Curious builder from Hyderabad","Focused on frontend and full-stack development","Learning by building real projects"] },
+  { id:"skills", n:"02", name:"Skills Planet", title:"Tools I work with", color:"#b49aff", desc:"A growing toolkit built through coursework, practice and hands-on projects.", facts:["HTML · CSS · JavaScript","Java · C · Python basics","React · Node.js · MongoDB — project experience"] },
+  { id:"projects", n:"03", name:"Project Galaxy", title:"Things I've been building", color:"#78e2c2", desc:"A collection of practical ideas and prototypes that helped me explore product thinking and software development.", facts:["PayPilot — assisted purchasing with budget guardrails","MedLink — emergency referral coordination concept","Code Mentor — coding interview practice","CareerX — opportunities community"] },
+  { id:"journey", n:"04", name:"Milestone Moon", title:"My learning journey", color:"#ffc477", desc:"Every challenge, collaboration and milestone is another step forward.", facts:["Smart India Hackathon · BIET internal Top 45","TCS iON Career Edge","JPMorgan Chase Software Engineering simulation · Forage","Campus and community initiatives"] },
+  { id:"contact", n:"05", name:"Connection Station", title:"Let's build something", color:"#ff91a8", desc:"Open to connecting with developers, teams and people building useful things.", facts:["Software development opportunities","Internships · Collaborations · Projects"], links:true }
 ];
 
-function GlobeMarker({ item, position, onSelect }) {
-  return <group position={position}>
-    <mesh><sphereGeometry args={[0.055, 16, 16]} /><meshBasicMaterial color={item.color} /></mesh>
-    <mesh><sphereGeometry args={[0.14, 16, 16]} /><meshBasicMaterial color={item.color} transparent opacity={0.16} /></mesh>
-    <Html center distanceFactor={9} position={[0, 0.23, 0]}>
-      <button className="landmark-label" style={{ borderColor: item.color }} onClick={(e) => { e.stopPropagation(); onSelect(item.id); }}>{item.number} · {item.name}</button>
-    </Html>
-  </group>;
+function OrbitPath({ radius }) {
+  return <mesh rotation={[Math.PI/2,0,0]}><torusGeometry args={[radius,0.008,6,220]} /><meshBasicMaterial color="#7896bd" transparent opacity={0.19} /></mesh>;
 }
-
-function Earth({ onSelect }) {
-  const [earthMap, cloudMap, normalMap, nightMap] = useLoader(THREE.TextureLoader, [
+function Planet({ radius, size, color, speed, seed=0, ring=false }) {
+  const orbit=useRef(); const body=useRef();
+  useFrame((_,dt)=>{ if(orbit.current) orbit.current.rotation.y+=dt*speed; if(body.current) body.current.rotation.y+=dt*.22; });
+  return <group ref={orbit} rotation={[0,seed,0]}><group position={[radius,0,0]}><mesh ref={body}><sphereGeometry args={[size,48,48]}/><meshStandardMaterial color={color} roughness={.86} metalness={.06}/></mesh>{ring&&<mesh rotation={[Math.PI/2.5,.15,0]}><torusGeometry args={[size*1.55,size*.12,8,96]}/><meshStandardMaterial color="#c7a77e" transparent opacity={.55}/></mesh>}<mesh scale={1.18}><sphereGeometry args={[size,32,32]}/><meshBasicMaterial color={color} transparent opacity={.045} side={THREE.BackSide}/></mesh></group></group>;
+}
+function EarthPlanet({ onEnter }) {
+  const [map,clouds,normal,lights]=useLoader(THREE.TextureLoader,[
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg",
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png",
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg",
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_lights_2048.png"
   ]);
-  const globe = useRef();
-  const clouds = useRef();
-  earthMap.colorSpace = THREE.SRGBColorSpace;
-  cloudMap.colorSpace = THREE.SRGBColorSpace;
-  nightMap.colorSpace = THREE.SRGBColorSpace;
-  const indiaPin = useMemo(() => {
-    const lat = 20.5937 * Math.PI / 180;
-    const lon = 78.9629 * Math.PI / 180;
-    const r = 2.03;
-    return new THREE.Vector3(-r * Math.cos(lat) * Math.sin(lon), r * Math.sin(lat), r * Math.cos(lat) * Math.cos(lon));
-  }, []);
-  const markers = useMemo(() => [
-    new THREE.Vector3(-1.05, 0.9, 1.48),
-    new THREE.Vector3(1.45, 0.62, 1.15),
-    new THREE.Vector3(0.35, -0.5, 1.9),
-    new THREE.Vector3(-1.65, -0.42, 0.9),
-    new THREE.Vector3(1.7, -0.72, 0.7)
-  ].map((v) => v.normalize().multiplyScalar(2.02)), []);
-  useFrame((_, delta) => {
-    if (globe.current) globe.current.rotation.y += delta * 0.075;
-    if (clouds.current) clouds.current.rotation.y += delta * 0.092;
-  });
-  return <group position={[1.15, -0.05, 0]} scale={1.08} rotation={[0.04, 1.15, -0.08]}>
-    <mesh ref={globe} castShadow receiveShadow>
-      <sphereGeometry args={[2, 96, 96]} />
-      <meshStandardMaterial map={earthMap} normalMap={normalMap} normalScale={new THREE.Vector2(0.22, 0.22)} emissiveMap={nightMap} emissive="#fff0c2" emissiveIntensity={0.42} roughness={0.94} metalness={0.02} />
+  const root=useRef(),cloud=useRef();
+  map.colorSpace=THREE.SRGBColorSpace; clouds.colorSpace=THREE.SRGBColorSpace; lights.colorSpace=THREE.SRGBColorSpace;
+  const india=useMemo(()=>{const lat=20.5937*Math.PI/180,lon=78.9629*Math.PI/180,r=1.04;return new THREE.Vector3(-r*Math.cos(lat)*Math.sin(lon),r*Math.sin(lat),r*Math.cos(lat)*Math.cos(lon));},[]);
+  useFrame((_,dt)=>{if(root.current)root.current.rotation.y+=dt*.12;if(cloud.current)cloud.current.rotation.y+=dt*.15;});
+  return <group ref={root}>
+    <mesh onClick={(e)=>{e.stopPropagation();onEnter();}} onPointerOver={()=>{document.body.style.cursor="pointer";}} onPointerOut={()=>{document.body.style.cursor="auto";}}>
+      <sphereGeometry args={[1,96,96]}/><meshStandardMaterial map={map} normalMap={normal} normalScale={new THREE.Vector2(.2,.2)} emissiveMap={lights} emissive="#fff0c2" emissiveIntensity={.35} roughness={.95}/>
     </mesh>
-    <mesh ref={clouds} scale={1.012}>
-      <sphereGeometry args={[2, 72, 72]} />
-      <meshStandardMaterial map={cloudMap} transparent opacity={0.28} depthWrite={false} blending={THREE.AdditiveBlending} />
-    </mesh>
-    <mesh scale={1.075}>
-      <sphereGeometry args={[2, 64, 64]} />
-      <meshBasicMaterial color="#4b9dff" transparent opacity={0.11} side={THREE.BackSide} />
-    </mesh>
-    <mesh rotation={[0.35, 0.2, -0.28]}>
-      <torusGeometry args={[2.62, 0.009, 8, 180]} />
-      <meshBasicMaterial color="#4a9bdb" transparent opacity={0.34} />
-    </mesh>
-    <group position={indiaPin}>
-      <mesh><sphereGeometry args={[0.07, 18, 18]} /><meshBasicMaterial color="#fff1b0" /></mesh>
-      <mesh><sphereGeometry args={[0.19, 18, 18]} /><meshBasicMaterial color="#ffc76a" transparent opacity={0.22} /></mesh>
-      <Html position={[0.22, 0.18, 0]} distanceFactor={8}><div className="india-label">INDIA <span>· ORIGIN</span></div></Html>
-    </group>
-    {districts.map((item, i) => <GlobeMarker key={item.id} item={item} position={markers[i]} onSelect={onSelect} />)}
+    <mesh ref={cloud} scale={1.009}><sphereGeometry args={[1,72,72]}/><meshStandardMaterial map={clouds} transparent opacity={.25} depthWrite={false}/></mesh>
+    <mesh scale={1.075}><sphereGeometry args={[1,64,64]}/><meshBasicMaterial color="#4b9dff" transparent opacity={.13} side={THREE.BackSide}/></mesh>
+    <group position={india}><mesh><sphereGeometry args={[.035,16,16]}/><meshBasicMaterial color="#fff0a6"/></mesh><mesh><sphereGeometry args={[.09,16,16]}/><meshBasicMaterial color="#ffbd63" transparent opacity={.22}/></mesh><Html distanceFactor={5} position={[.12,.1,0]}><span className="india-pin">INDIA · CLICK EARTH</span></Html></group>
+    <Html position={[0,-1.35,0]} center distanceFactor={8}><button className="earth-enter" onClick={onEnter}>ENTER EARTH <ArrowUpRight size={13}/></button></Html>
   </group>;
 }
-
-function EarthScene({ onSelect }) {
-  return <Canvas camera={{ position: [0, 0, 8.4], fov: 38 }} dpr={[1, 1.6]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}>
-    <color attach="background" args={["#020611"]} />
-    <fog attach="fog" args={["#020611", 16, 36]} />
-    <ambientLight intensity={0.38} />
-    <directionalLight position={[-5, 4, 7]} intensity={3.4} color="#d6e8ff" />
-    <pointLight position={[5, -2, -4]} intensity={18} color="#1f5db0" distance={18} />
-    <Stars radius={100} depth={65} count={4200} factor={4} saturation={0.3} fade speed={0.45} />
-    <Suspense fallback={null}><Earth onSelect={onSelect} /></Suspense>
-    <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={Math.PI / 2.8} maxPolarAngle={Math.PI / 1.7} rotateSpeed={0.45} />
+function SolarSystem({ onEnter }) {
+  const system=useRef();
+  useFrame((_,dt)=>{if(system.current)system.current.rotation.y+=dt*.012;});
+  return <Canvas camera={{position:[0,8.5,19],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:false,powerPreference:"high-performance"}}>
+    <color attach="background" args={["#02040c"]}/><fog attach="fog" args={["#02040c",24,55]}/>
+    <ambientLight intensity={.34}/><pointLight position={[0,0,0]} intensity={190} distance={35} color="#ffb45c"/><directionalLight position={[-7,8,9]} intensity={1.5} color="#b8d9ff"/>
+    <Stars radius={110} depth={75} count={8500} factor={4.5} saturation={.25} fade speed={.35}/>
+    <group ref={system}>
+      <mesh><sphereGeometry args={[.82,64,64]}/><meshBasicMaterial color="#ffb64d"/></mesh>
+      <mesh scale={1.28}><sphereGeometry args={[.82,48,48]}/><meshBasicMaterial color="#ff8b36" transparent opacity={.1} side={THREE.BackSide}/></mesh>
+      {[2.1,3.2,4.4,5.65,7.1,8.6,10.2].map(r=><OrbitPath key={r} radius={r}/>)}
+      <Planet radius={2.1} size={.17} color="#a9a9a2" speed={.48} seed={.3}/>
+      <Planet radius={3.2} size={.28} color="#d4a66f" speed={.31} seed={1.5}/>
+      <group position={[5.65,0,0]}><Planet radius={0} size={.43} color="#367ac4" speed={.22} seed={.8}/><EarthPlanet onEnter={onEnter}/></group>
+      <Planet radius={7.1} size={.31} color="#b75c42" speed={.17} seed={2.1}/>
+      <Planet radius={8.6} size={.75} color="#c69a70" speed={.105} seed={3.1} ring/>
+      <Planet radius={10.2} size={.58} color="#8bc5cf" speed={.075} seed={4.1} ring/>
+    </group>
+    <OrbitControls enablePan={false} minDistance={14} maxDistance={25} minPolarAngle={.85} maxPolarAngle={2.25} rotateSpeed={.35}/>
+  </Canvas>;
+}
+function WorldScene({ onSelect }) {
+  const group=useRef();
+  useFrame((_,dt)=>{if(group.current)group.current.rotation.y+=dt*.025;});
+  return <Canvas camera={{position:[0,0,10],fov:42}} dpr={[1,1.5]} gl={{antialias:true,alpha:false}}>
+    <color attach="background" args={["#030713"]}/><ambientLight intensity={.5}/><pointLight position={[0,3,6]} intensity={55} color="#528fd8"/><Stars radius={90} depth={60} count={5500} factor={4} fade/>
+    <group ref={group}>{worlds.map((w,i)=>{const a=i*Math.PI*2/worlds.length-Math.PI/2;const r=3.15;return <group key={w.id} position={[Math.cos(a)*r,Math.sin(a)*r*.72,0]}><mesh onClick={(e)=>{e.stopPropagation();onSelect(w.id);}} onPointerOver={()=>{document.body.style.cursor="pointer";}} onPointerOut={()=>{document.body.style.cursor="auto";}}><sphereGeometry args={[.47,48,48]}/><meshStandardMaterial color={w.color} emissive={w.color} emissiveIntensity={.24} roughness={.48}/></mesh><mesh scale={1.28}><sphereGeometry args={[.47,32,32]}/><meshBasicMaterial color={w.color} transparent opacity={.08} side={THREE.BackSide}/></mesh><Html center distanceFactor={9} position={[0,-.75,0]}><button className="world-planet-label" onClick={()=>onSelect(w.id)}>{w.n} · {w.name}</button></Html></group>;})}</group>
+    <OrbitControls enablePan={false} enableZoom={false} rotateSpeed={.3}/>
   </Canvas>;
 }
 
 export default function WorldPortfolio() {
-  const [active, setActive] = useState(null);
-  const [intro, setIntro] = useState(true);
-  const [muted, setMuted] = useState(true);
-  const [showMap, setShowMap] = useState(false);
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const selected = districts.find((d) => d.id === active);
-  useEffect(() => { const handle = (e) => { if (e.key === "Escape") { setActive(null); setIntro(false); setMobileMenu(false); } if (e.key === "1") setActive("story"); if (e.key === "2") setActive("skills"); if (e.key === "3") setActive("projects"); if (e.key === "4") setActive("journey"); if (e.key === "5") setActive("contact"); }; window.addEventListener("keydown", handle); return () => window.removeEventListener("keydown", handle); }, []);
-  return <main className={intro ? "universe-shell is-intro" : "universe-shell is-exploring"}>
-    <div className="world-canvas"><EarthScene onSelect={(id) => { setActive(id); setIntro(false); }} /></div>
-    <div className="world-vignette" />
-    <header className="world-topbar"><a className="wordmark" href="#top"><span className="wordmark-mark">M.</span><span>MOUNIKA <i>MADUPOJU</i></span></a><div className="topbar-center"><span className="live-dot" /> PERSONAL DIGITAL UNIVERSE</div><div className="topbar-actions"><a href="https://github.com/madupojumounika" target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={17}/></a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17}/></a><button onClick={() => setMuted(!muted)} aria-label="Toggle sound">{muted ? <VolumeX size={17}/> : <Volume2 size={17}/>}</button></div></header>
-    <aside className="world-side"><span className="side-kicker">NAVIGATE THE WORLD</span>{districts.map((d) => <button key={d.id} className={active === d.id ? "side-link active" : "side-link"} onClick={() => { setActive(d.id); setIntro(false); }}><span>{d.number}</span>{d.name}</button>)}<div className="side-line"/><button className="side-link map-link" onClick={() => setShowMap(!showMap)}><Compass size={14}/> {showMap ? "Hide map" : "World map"}</button></aside>
-    <section className="hero-copy" id="top"><div className="eyebrow"><span/> A DEVELOPER IN PROGRESS · HYDERABAD, INDIA</div><h1>Ideas become<br/><em>worlds.</em></h1><p>Hey, I'm Mounika — I build thoughtful digital experiences, explore new technologies and turn curious ideas into working projects.</p><div className="hero-actions"><button className="primary-cta" onClick={() => { setIntro(false); setActive("projects"); }}>Explore my work <ArrowUpRight size={16}/></button><a className="text-cta" href="mailto:madupojumounika0@gmail.com">Let's connect <ArrowUpRight size={15}/></a></div><div className="hero-note"><span className="note-rule"/> ROTATING EARTH · INDIA IS HOME</div></section>
-    <div className="world-coordinates"><span>17°23' N</span><span className="coord-line"/><span>78°29' E</span><span className="coord-label">HYDERABAD / IN</span></div>
-    <div className="world-controls"><div className="control-key"><Mouse size={14}/><span>DRAG TO ROTATE EARTH</span></div><div className="control-key"><span className="keycap">CLICK</span><span>EXPLORE DESTINATIONS</span></div><div className="control-key"><span className="keycap">ESC</span><span>CLOSE PANEL</span></div></div>
-    <div className="world-status"><span className="status-pulse"/> EARTH IN MOTION <span className="status-sep">/</span> 5 DESTINATIONS <span className="status-sep">/</span> HYDERABAD, IN</div>
-    {intro && <div className="intro-overlay"><div className="intro-card"><div className="intro-orbit"><div className="intro-globe"><span>EARTH</span></div><i/><b/></div><div className="intro-overline">WELCOME TO MY DIGITAL UNIVERSE</div><h2>One planet.<br/><em>A universe of ideas.</em></h2><p>Watch the Earth turn. Find India. Then explore my story, skills, projects and milestones across this digital universe.</p><button className="primary-cta" onClick={() => setIntro(false)}>Enter the universe <ArrowUpRight size={16}/></button><button className="skip-intro" onClick={() => setIntro(false)}>SKIP INTRO</button></div></div>}
-    {selected && <div className="district-panel"><button className="panel-close" onClick={() => setActive(null)} aria-label="Close"><X size={18}/></button><div className="panel-overline" style={{ color: selected.color }}>{selected.number} / {selected.eyebrow}</div><h2>{selected.name}</h2><p className="panel-lead">{selected.description}</p><p className="panel-detail">{selected.detail}</p><div className="panel-facts">{selected.facts.map((f) => <div key={f}><span style={{ background: selected.color }}/>{f}</div>)}</div>{active === "projects" && <div className="project-links"><a href="https://github.com/madupojumounika/paypilot" target="_blank" rel="noreferrer">PayPilot <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/medlink" target="_blank" rel="noreferrer">MedLink <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/code-mentor" target="_blank" rel="noreferrer">Code Mentor <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/careerx" target="_blank" rel="noreferrer">CareerX <ArrowUpRight size={13}/></a></div>}{active === "contact" && <div className="contact-links"><a href="mailto:madupojumounika0@gmail.com"><Mail size={15}/> Email me</a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer"><Linkedin size={15}/> LinkedIn</a></div>}<div className="panel-footer"><span>DESTINATION UNLOCKED</span><span>↗</span></div></div>}
-    {showMap && <div className="map-panel"><div className="map-heading">WORLD AT A GLANCE <button onClick={() => setShowMap(false)}><X size={15}/></button></div><div className="map-grid">{districts.map((d) => <button key={d.id} onClick={() => { setActive(d.id); setShowMap(false); setIntro(false); }}><span style={{ background: d.color }}>{d.number}</span>{d.name}<ArrowUpRight size={13}/></button>)}</div></div>}
-    <footer className="world-footer"><span>DESIGNED TO BE EXPLORED <Sparkles size={13}/></span><span>© 2026 MOUNIKA MADUPOJU</span><a href="mailto:madupojumounika0@gmail.com">SAY HELLO <ArrowUpRight size={13}/></a></footer>
+  const [page,setPage]=useState("universe"),[transition,setTransition]=useState(false),[active,setActive]=useState(null);
+  const selected=worlds.find(w=>w.id===active);
+  const enterEarth=()=>{if(transition)return;setTransition(true);window.setTimeout(()=>{setPage("world");setTransition(false);},1350);};
+  const back=()=>{setActive(null);setPage("universe");};
+  useEffect(()=>{const key=e=>{if(e.key==="Escape")setActive(null);};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key);},[]);
+  return <main className={page==="universe"?"cosmos-page":"myworld-page"}>
+    <div className="scene-canvas">{page==="universe"?<SolarSystem onEnter={enterEarth}/>:<WorldScene onSelect={setActive}/>}</div>
+    {page==="universe"?<>
+      <div className="cosmos-vignette"/>
+      <div className="cosmos-brand"><span className="brand-star">✦</span><span>MOUNIKA MADUPOJU</span><small>AN INTERACTIVE DIGITAL UNIVERSE</small></div>
+      <div className="cosmos-heading"><span>THE SOLAR SYSTEM</span><h1>A universe<br/>waiting to be <em>explored.</em></h1><p>Find the blue planet. That's where my world begins.</p></div>
+      <div className="cosmos-instruction"><span className="pulse-dot"/> DRAG TO EXPLORE <i/> CLICK EARTH TO ENTER</div>
+      <div className="cosmos-footer">A PERSONAL PORTFOLIO EXPERIENCE <span>01 — THE UNIVERSE</span></div>
+      {transition&&<div className="warp-transition"><div className="warp-ring"/><span>ENTERING EARTH</span></div>}
+    </>:<>
+      <header className="world-header"><button onClick={back} className="back-universe"><ArrowLeft size={15}/> BACK TO UNIVERSE</button><div><b>MOUNIKA'S WORLD</b><small>EXPLORE THE DESTINATIONS</small></div><div className="social-links"><a href="https://github.com/madupojumounika" target="_blank" rel="noreferrer"><Github size={17}/></a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer"><Linkedin size={17}/></a></div></header>
+      <section className="world-intro"><span>WELCOME TO MY WORLD</span><h1>Every world tells<br/><em>a different story.</em></h1><p>Choose a planet to discover one part of my journey.</p></section>
+      <div className="world-hint">SELECT A PLANET TO DISCOVER</div>
+      {selected&&<section className="world-detail"><button className="detail-close" onClick={()=>setActive(null)} aria-label="Close"><X size={18}/></button><span style={{color:selected.color}}>{selected.n} / {selected.name.toUpperCase()}</span><h2>{selected.title}</h2><p>{selected.desc}</p><ul>{selected.facts.map(f=><li key={f}>{f}</li>)}</ul>{selected.links&&<div className="detail-links"><a href="mailto:madupojumounika0@gmail.com"><Mail size={15}/> EMAIL</a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer"><Linkedin size={15}/> LINKEDIN</a></div>}{selected.id==="projects"&&<div className="detail-links"><a href="https://github.com/madupojumounika/paypilot" target="_blank" rel="noreferrer">PAYPILOT <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/medlink" target="_blank" rel="noreferrer">MEDLINK <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/code-mentor" target="_blank" rel="noreferrer">CODE MENTOR <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/careerx" target="_blank" rel="noreferrer">CAREERX <ArrowUpRight size={13}/></a></div>}</section>}
+      <div className="world-footer">© 2026 MOUNIKA MADUPOJU <span>02 — MY WORLD</span></div>
+    </>}
   </main>;
 }
