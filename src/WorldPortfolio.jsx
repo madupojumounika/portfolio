@@ -98,7 +98,7 @@ export default function WorldPortfolio() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const selected = districts.find((d) => d.id === active);
   useEffect(() => { const handle = (e) => { if (e.key === "Escape") { setActive(null); setIntro(false); setMobileMenu(false); } if (e.key === "1") setActive("story"); if (e.key === "2") setActive("skills"); if (e.key === "3") setActive("projects"); if (e.key === "4") setActive("journey"); if (e.key === "5") setActive("contact"); }; window.addEventListener("keydown", handle); return () => window.removeEventListener("keydown", handle); }, []);
-  return <main className="universe-shell">
+  return <main className={intro ? "universe-shell is-intro" : "universe-shell is-exploring"}>
     <div className="world-canvas"><EarthScene onSelect={(id) => { setActive(id); setIntro(false); }} /></div>
     <div className="world-vignette" />
     <header className="world-topbar"><a className="wordmark" href="#top"><span className="wordmark-mark">M.</span><span>MOUNIKA <i>MADUPOJU</i></span></a><div className="topbar-center"><span className="live-dot" /> PERSONAL DIGITAL UNIVERSE</div><div className="topbar-actions"><a href="https://github.com/madupojumounika" target="_blank" rel="noreferrer" aria-label="GitHub"><Github size={17}/></a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={17}/></a><button onClick={() => setMuted(!muted)} aria-label="Toggle sound">{muted ? <VolumeX size={17}/> : <Volume2 size={17}/>}</button></div></header>
