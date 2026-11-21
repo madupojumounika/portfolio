@@ -54,7 +54,7 @@ function EarthOrbit({ onEnter }) {\n  const orbit=useRef();\n  useFrame((_,dt)=>
       {[2.1,3.2,4.4,5.65,7.1,8.6,10.2].map(r=><OrbitPath key={r} radius={r}/>)}
       <Planet radius={2.1} size={.17} color="#a9a9a2" speed={.48} seed={.3}/>
       <Planet radius={3.2} size={.28} color="#d4a66f" speed={.31} seed={1.5}/>
-      <EarthOrbit onEnter={onEnter}/>
+      <Suspense fallback={null}><EarthOrbit onEnter={onEnter}/></Suspense>
       <Planet radius={7.1} size={.31} color="#b75c42" speed={.17} seed={2.1}/>
       <Planet radius={8.6} size={.75} color="#c69a70" speed={.105} seed={3.1} ring/>
       <Planet radius={10.2} size={.58} color="#8bc5cf" speed={.075} seed={4.1} ring/>
