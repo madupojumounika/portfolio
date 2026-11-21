@@ -41,7 +41,18 @@ function EarthPlanet({ onEnter }) {
     <Html position={[0,-1.35,0]} center distanceFactor={8}><button className="earth-enter" onClick={onEnter}>ENTER EARTH <ArrowUpRight size={13}/></button></Html>
   </group>;
 }
-function EarthOrbit({ onEnter }) {\n  const orbit=useRef();\n  useFrame((_,dt)=>{if(orbit.current)orbit.current.rotation.y+=dt*.22;});\n  return <group ref={orbit} position={[5.65,0,0]}><EarthPlanet onEnter={onEnter}/></group>;\n}\nfunction SolarSystem({ onEnter }) {
+function EarthOrbit({ onEnter }) {
+  const orbit = useRef();
+  useFrame((_, dt) => {
+    if (orbit.current) orbit.current.rotation.y += dt * 0.22;
+  });
+  return (
+    <group ref={orbit} position={[5.65, 0, 0]}>
+      <EarthPlanet onEnter={onEnter} />
+    </group>
+  );
+}
+function SolarSystem({ onEnter }) {
   const system=useRef();
   useFrame((_,dt)=>{if(system.current)system.current.rotation.y+=dt*.012;});
   return <Canvas camera={{position:[0,8.5,19],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:false,powerPreference:"high-performance"}}>
