@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, Float, Html, Stars } from "@react-three/drei";
-import * as THREE from "three";
-import { ArrowDown, ArrowUpRight, Compass, Github, Linkedin, Mail, MapPin, Mouse, Move, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { Environment, Float, Html, OrbitControls, Stars } from "@react-three/drei";
+import { ArrowUpRight, Compass, Github, Linkedin, Mail, Mouse, Move, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 
 const districts = [
   { id: "story", number: "01", name: "Origin District", eyebrow: "THE STORY", color: "#73c9ff", description: "A curious builder from Hyderabad, learning by turning ideas into things people can use.", detail: "I'm Mounika Madupoju, a B.Tech CSE (AI & ML) student at Bharat Institute of Engineering & Technology, graduating in 2028. My focus is building thoughtful web experiences and practical software.", facts: ["B.Tech CSE (AI & ML)", "BIET · Hyderabad", "Class of 2028"] },
@@ -44,6 +43,7 @@ function WorldScene({ active, onSelect }) {
     <Planet position={[-10, 5, -11]} color="#183e72" size={2.1} speed={0.08} />
     <Float speed={1.1} rotationIntensity={0.15} floatIntensity={0.45}><mesh position={[8, 4.8, -9]}><torusGeometry args={[1.15, 0.035, 12, 80]} /><meshStandardMaterial color="#4d9cff" emissive="#2764b8" emissiveIntensity={1.1} /></mesh></Float>
     {districts.map((item, i) => <Landmark key={item.id} item={item} position={[[ -6, 0, -3.5], [0, 0, -6], [6, 0, -3.5], [-4.5, 0, 5], [5, 0, 5]][i]} active={active === item.id} onSelect={onSelect} />)}
+    <OrbitControls enablePan={false} minDistance={10} maxDistance={25} minPolarAngle={0.45} maxPolarAngle={1.35} />
     <Environment preset="night" />
   </Canvas>;
 }
