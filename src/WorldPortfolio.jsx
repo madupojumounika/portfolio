@@ -68,6 +68,7 @@ function Car({ position, color, speed = 1 }) {
     if (!ref.current) return;
     ref.current.position.z += delta * speed;
     if (ref.current.position.z > 19) ref.current.position.z = -19;
+    if (ref.current.position.z < -19) ref.current.position.z = 19;
   });
   return <group ref={ref} position={position}>
     <mesh position={[0, 0.38, 0]} castShadow><boxGeometry args={[0.92, 0.48, 1.75]} /><meshStandardMaterial color={color} metalness={0.55} roughness={0.28} /></mesh>
