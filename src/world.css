@@ -4,3 +4,7 @@
 
 /* Real-world city exploration scene */
 .world-canvas canvas{touch-action:none}.landmark-label{font:9px "DM Mono",monospace;letter-spacing:.04em;color:#f4f7ff;background:rgba(8,18,29,.88);padding:7px 10px;border:1px solid rgba(125,199,255,.5);border-radius:4px;box-shadow:0 5px 22px rgba(0,0,0,.3)}
+
+/* Cinematic Earth landing */
+.world-canvas{background:radial-gradient(ellipse at 68% 46%,#10264a 0%,#071329 35%,#020611 74%)}.world-vignette{background:linear-gradient(90deg,rgba(2,6,17,.88) 0%,rgba(2,6,17,.64) 27%,rgba(2,6,17,.04) 64%,rgba(2,6,17,.08) 100%),linear-gradient(0deg,rgba(2,6,17,.7),transparent 28%,transparent 75%,rgba(2,6,17,.28))}.india-label{padding:6px 9px;border:1px solid rgba(255,205,122,.55);background:rgba(7,15,29,.84);color:#ffe0a6;font:9px "DM Mono",monospace;letter-spacing:.12em;white-space:nowrap;border-radius:3px;box-shadow:0 0 20px rgba(255,185,88,.22)}.india-label span{color:#a9bdd8}.intro-globe{animation:earth-breathe 4s ease-in-out infinite;background:radial-gradient(circle at 33% 28%,#e3f7ff 0%,#4d9ddd 34%,#15518d 65%,#061a37 100%);box-shadow:0 0 25px rgba(70,160,255,.65),inset -10px -8px 20px rgba(0,0,0,.5)}@keyframes earth-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}.world-controls{background:rgba(3,9,20,.25);padding:12px 14px;border:1px solid rgba(123,177,235,.12);backdrop-filter:blur(8px)}
+@media(max-width:650px){.world-vignette{background:linear-gradient(180deg,rgba(2,6,17,.45),rgba(2,6,17,.08) 40%,rgba(2,6,17,.78))}.world-controls{display:none}.hero-copy{top:16%}}
