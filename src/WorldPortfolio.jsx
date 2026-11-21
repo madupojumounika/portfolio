@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import { Html, OrbitControls, Stars } from "@react-three/drei";
 import { ArrowUpRight, Compass, Github, Linkedin, Mail, Mouse, Move, Sparkles, Volume2, VolumeX, X } from "lucide-react";
