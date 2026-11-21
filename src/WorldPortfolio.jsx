@@ -72,7 +72,7 @@ function BookContent({chapter}) {
 }
 
 export default function WorldPortfolio() {
-  const [stage,setStage]=useState("universe"),[transition,setTransition]=useState(false),[chapterIndex,setChapterIndex]=useState(0),[turn,setTurn]=useState("next"),[turnKey,setTurnKey]=useState(0);
+  const [stage,setStage]=useState(window.location.pathname==="/world"?"welcome":"universe"),[transition,setTransition]=useState(false),[chapterIndex,setChapterIndex]=useState(0),[turn,setTurn]=useState("next"),[turnKey,setTurnKey]=useState(0);
   const timer=useRef(null);
   const chapter=chapters[chapterIndex];
   const enterEarth=()=>{if(transition)return;setTransition(true);timer.current=window.setTimeout(()=>{setStage("welcome");setTransition(false);},1250);};
