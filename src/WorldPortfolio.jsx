@@ -73,11 +73,11 @@ function WorldScene({ onSelect }) {
 }
 
 export default function WorldPortfolio() {
-  const [page,setPage]=useState("universe"),[transition,setTransition]=useState(false),[active,setActive]=useState(null);
+  const [page,setPage]=useState(window.location.pathname==="/world"?"world":"universe"),[transition,setTransition]=useState(false),[active,setActive]=useState(null);
   const selected=worlds.find(w=>w.id===active);
-  const enterEarth=()=>{if(transition)return;setTransition(true);window.setTimeout(()=>{setPage("world");setTransition(false);},1350);};
-  const back=()=>{setActive(null);setPage("universe");};
-  useEffect(()=>{const key=e=>{if(e.key==="Escape")setActive(null);};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key);},[]);
+  const enterEarth=()=>{if(transition)return;setTransition(true);window.setTimeout(()=>{window.history.pushState({portfolioWorld:true},"","/world");setPage("world");setTransition(false);},1350);};
+  const back=()=>{setActive(null);window.history.pushState({portfolioWorld:false},"","/");setPage("universe");};
+  useEffect(()=>{const key=e=>{if(e.key==="Escape")setActive(null);};const pop=()=>{setActive(null);setPage(window.location.pathname==="/world"?"world":"universe");};window.addEventListener("keydown",key);window.addEventListener("popstate",pop);return()=>{window.removeEventListener("keydown",key);window.removeEventListener("popstate",pop);};},[]);
   return <main className={page==="universe"?"cosmos-page":"myworld-page"}>
     <div className="scene-canvas">{page==="universe"?<SolarSystem onEnter={enterEarth}/>:<WorldScene onSelect={setActive}/>}</div>
     {page==="universe"?<>
