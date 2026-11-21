@@ -2,25 +2,23 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { Html, OrbitControls, Stars } from "@react-three/drei";
 import * as THREE from "three";
-import { ArrowLeft, ArrowUpRight, Github, Linkedin, Mail, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Github, Linkedin, Mail, Sparkles, X } from "lucide-react";
 
-const worlds = [
-  { id:"story", n:"01", name:"My Origin", title:"The person behind the universe", color:"#77caff", desc:"I'm Mounika Madupoju, a B.Tech CSE (AI & ML) student at Bharat Institute of Engineering & Technology, Hyderabad, graduating in 2028.", facts:["Curious builder from Hyderabad","Focused on frontend and full-stack development","Learning by building real projects"] },
-  { id:"skills", n:"02", name:"Skills Planet", title:"Tools I work with", color:"#b49aff", desc:"A growing toolkit built through coursework, practice and hands-on projects.", facts:["HTML · CSS · JavaScript","Java · C · Python basics","React · Node.js · MongoDB — project experience"] },
-  { id:"projects", n:"03", name:"Project Galaxy", title:"Things I've been building", color:"#78e2c2", desc:"A collection of practical ideas and prototypes that helped me explore product thinking and software development.", facts:["PayPilot — assisted purchasing with budget guardrails","MedLink — emergency referral coordination concept","Code Mentor — coding interview practice","CareerX — opportunities community"] },
-  { id:"journey", n:"04", name:"Milestone Moon", title:"My learning journey", color:"#ffc477", desc:"Every challenge, collaboration and milestone is another step forward.", facts:["Smart India Hackathon · BIET internal Top 45","TCS iON Career Edge","JPMorgan Chase Software Engineering simulation · Forage","Campus and community initiatives"] },
-  { id:"contact", n:"05", name:"Connection Station", title:"Let's build something", color:"#ff91a8", desc:"Open to connecting with developers, teams and people building useful things.", facts:["Software development opportunities","Internships · Collaborations · Projects"], links:true }
+const chapters = [
+  { id:"about", number:"01", eyebrow:"THE AUTHOR", title:"A little about me", subtitle:"The person behind the pixels.", color:"#8bcaff", body:"Hello, I'm Mounika Madupoju — a curious computer science student who loves turning ideas into useful digital experiences. I'm pursuing B.Tech in CSE (AI & ML) at Bharat Institute of Engineering & Technology, Hyderabad, and expect to graduate in 2028.", bullets:["Curious builder, always learning by making","Interested in frontend and full-stack software development","I enjoy solving problems and turning concepts into working projects"] },
+  { id:"skills", number:"02", eyebrow:"MY TOOLKIT", title:"Skills I'm growing", subtitle:"Every tool is another way to create.", color:"#c0a5ff", body:"My toolkit is growing through coursework, practice and hands-on projects. I enjoy building interfaces and learning how the pieces of a web application work together.", bullets:["Frontend: HTML, CSS and JavaScript","Programming: Java, C and Python basics","Project experience: React, Node.js and MongoDB"] },
+  { id:"projects", number:"03", eyebrow:"BUILT WITH CURIOSITY", title:"Projects & experiments", subtitle:"Ideas made tangible.", color:"#79e4c7", body:"These projects helped me explore product thinking, user experience and full-stack development. Each one represents a new problem I wanted to understand and solve.", projects:[["PayPilot","An AI-assisted purchasing command center with research, budget guardrails and human approval.","https://github.com/madupojumounika/paypilot"],["MedLink","An emergency referral coordination concept connecting care resources.","https://github.com/madupojumounika/medlink"],["Code Mentor","A coding interview coach and learning tracker.","https://github.com/madupojumounika/code-mentor"],["CareerX","A community sharing internships, hackathons and opportunities.","https://github.com/madupojumounika/careerx"]] },
+  { id:"journey", number:"04", eyebrow:"MILESTONES", title:"The journey so far", subtitle:"Small steps become meaningful milestones.", color:"#ffc982", body:"I'm still at the beginning of my journey, and every experience teaches me something new. I'm grateful for the opportunities to learn, collaborate and challenge myself.", bullets:["BIET Smart India Hackathon internal round — Top 45","TCS iON Career Edge","JPMorgan Chase Software Engineering simulation on Forage","Campus ambassador and student community initiatives"] },
+  { id:"contact", number:"05", eyebrow:"THE NEXT CHAPTER", title:"Let's connect", subtitle:"The best stories are built together.", color:"#ff9eb6", body:"I'm open to connecting with developers, teams and people building useful things. If you'd like to discuss a project, an opportunity or an idea, I'd love to hear from you.", bullets:["Internship and entry-level software opportunities","Frontend and full-stack projects","Learning, collaboration and developer communities"], contact:true }
 ];
 
-function OrbitPath({ radius }) {
-  return <mesh rotation={[Math.PI/2,0,0]}><torusGeometry args={[radius,0.008,6,220]} /><meshBasicMaterial color="#7896bd" transparent opacity={0.19} /></mesh>;
+function OrbitPath({ radius }) { return <mesh rotation={[Math.PI/2,0,0]}><torusGeometry args={[radius,.008,6,220]}/><meshBasicMaterial color="#7896bd" transparent opacity={.19}/></mesh>; }
+function Planet({ radius,size,color,speed,seed=0,ring=false }) {
+  const orbit=useRef(),body=useRef();
+  useFrame((_,dt)=>{if(orbit.current)orbit.current.rotation.y+=dt*speed;if(body.current)body.current.rotation.y+=dt*.22;});
+  return <group ref={orbit} rotation={[0,seed,0]}><group position={[radius,0,0]}><mesh ref={body}><sphereGeometry args={[size,48,48]}/><meshStandardMaterial color={color} roughness={.86} metalness={.06}/></mesh>{ring&&<mesh rotation={[Math.PI/2.5,.15,0]}><torusGeometry args={[size*1.55,size*.12,8,96]}/><meshStandardMaterial color="#c7a77e" transparent opacity={.55}/></mesh>}</group></group>;
 }
-function Planet({ radius, size, color, speed, seed=0, ring=false }) {
-  const orbit=useRef(); const body=useRef();
-  useFrame((_,dt)=>{ if(orbit.current) orbit.current.rotation.y+=dt*speed; if(body.current) body.current.rotation.y+=dt*.22; });
-  return <group ref={orbit} rotation={[0,seed,0]}><group position={[radius,0,0]}><mesh ref={body}><sphereGeometry args={[size,48,48]}/><meshStandardMaterial color={color} roughness={.86} metalness={.06}/></mesh>{ring&&<mesh rotation={[Math.PI/2.5,.15,0]}><torusGeometry args={[size*1.55,size*.12,8,96]}/><meshStandardMaterial color="#c7a77e" transparent opacity={.55}/></mesh>}<mesh scale={1.18}><sphereGeometry args={[size,32,32]}/><meshBasicMaterial color={color} transparent opacity={.045} side={THREE.BackSide}/></mesh></group></group>;
-}
-function EarthPlanet({ onEnter }) {
+function EarthPlanet({onEnter}) {
   const [map,clouds,normal,lights]=useLoader(THREE.TextureLoader,[
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg",
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png",
@@ -28,140 +26,64 @@ function EarthPlanet({ onEnter }) {
     "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_lights_2048.png"
   ]);
   const root=useRef(),cloud=useRef();
-  map.colorSpace=THREE.SRGBColorSpace; clouds.colorSpace=THREE.SRGBColorSpace; lights.colorSpace=THREE.SRGBColorSpace;
+  map.colorSpace=THREE.SRGBColorSpace;clouds.colorSpace=THREE.SRGBColorSpace;lights.colorSpace=THREE.SRGBColorSpace;
   const india=useMemo(()=>{const lat=20.5937*Math.PI/180,lon=78.9629*Math.PI/180,r=1.04;return new THREE.Vector3(-r*Math.cos(lat)*Math.sin(lon),r*Math.sin(lat),r*Math.cos(lat)*Math.cos(lon));},[]);
   useFrame((_,dt)=>{if(root.current)root.current.rotation.y+=dt*.12;if(cloud.current)cloud.current.rotation.y+=dt*.15;});
   return <group ref={root}>
-    <mesh onClick={(e)=>{e.stopPropagation();onEnter();}} onPointerOver={()=>{document.body.style.cursor="pointer";}} onPointerOut={()=>{document.body.style.cursor="auto";}}>
-      <sphereGeometry args={[1,96,96]}/><meshStandardMaterial map={map} normalMap={normal} normalScale={new THREE.Vector2(.2,.2)} emissiveMap={lights} emissive="#fff0c2" emissiveIntensity={.35} roughness={.95}/>
-    </mesh>
+    <mesh onClick={e=>{e.stopPropagation();onEnter();}} onPointerOver={()=>document.body.style.cursor="pointer"} onPointerOut={()=>document.body.style.cursor="auto"}><sphereGeometry args={[1,96,96]}/><meshStandardMaterial map={map} normalMap={normal} normalScale={new THREE.Vector2(.2,.2)} emissiveMap={lights} emissive="#fff0c2" emissiveIntensity={.35} roughness={.95}/></mesh>
     <mesh ref={cloud} scale={1.009}><sphereGeometry args={[1,72,72]}/><meshStandardMaterial map={clouds} transparent opacity={.25} depthWrite={false}/></mesh>
     <mesh scale={1.075}><sphereGeometry args={[1,64,64]}/><meshBasicMaterial color="#4b9dff" transparent opacity={.13} side={THREE.BackSide}/></mesh>
     <group position={india}><mesh><sphereGeometry args={[.035,16,16]}/><meshBasicMaterial color="#fff0a6"/></mesh><mesh><sphereGeometry args={[.09,16,16]}/><meshBasicMaterial color="#ffbd63" transparent opacity={.22}/></mesh><Html distanceFactor={5} position={[.12,.1,0]}><span className="india-pin">INDIA · CLICK EARTH</span></Html></group>
-    <Html position={[0,-1.35,0]} center distanceFactor={8}><button className="earth-enter" onClick={onEnter}>ENTER EARTH <ArrowUpRight size={13}/></button></Html>
+    <Html position={[0,-1.35,0]} center distanceFactor={8}><button className="earth-enter" onClick={onEnter}>ENTER MY WORLD <ArrowUpRight size={13}/></button></Html>
   </group>;
 }
-function EarthOrbit({ onEnter }) {
-  const orbit = useRef();
-  useFrame((_, dt) => {
-    if (orbit.current) orbit.current.rotation.y += dt * 0.22;
-  });
-  return (
-    <group ref={orbit} position={[5.65, 0, 0]}>
-      <EarthPlanet onEnter={onEnter} />
-    </group>
-  );
+function EarthOrbit({onEnter}) { const orbit=useRef();useFrame((_,dt)=>{if(orbit.current)orbit.current.rotation.y+=dt*.22;});return <group ref={orbit} position={[5.65,0,0]}><EarthPlanet onEnter={onEnter}/></group>; }
+function SolarSystemContents({onEnter}) {
+  const system=useRef();useFrame((_,dt)=>{if(system.current)system.current.rotation.y+=dt*.012;});
+  return <><color attach="background" args={["#02040c"]}/><fog attach="fog" args={["#02040c",24,55]}/><ambientLight intensity={.34}/><pointLight position={[0,0,0]} intensity={190} distance={35} color="#ffb45c"/><directionalLight position={[-7,8,9]} intensity={1.5} color="#b8d9ff"/><Stars radius={110} depth={75} count={8500} factor={4.5} saturation={.25} fade speed={.35}/><group ref={system}><mesh><sphereGeometry args={[.82,64,64]}/><meshBasicMaterial color="#ffb64d"/></mesh><mesh scale={1.28}><sphereGeometry args={[.82,48,48]}/><meshBasicMaterial color="#ff8b36" transparent opacity={.1} side={THREE.BackSide}/></mesh>{[2.1,3.2,4.4,5.65,7.1,8.6,10.2].map(r=><OrbitPath key={r} radius={r}/>)}<Planet radius={2.1} size={.17} color="#a9a9a2" speed={.48} seed={.3}/><Planet radius={3.2} size={.28} color="#d4a66f" speed={.31} seed={1.5}/><Suspense fallback={null}><EarthOrbit onEnter={onEnter}/></Suspense><Planet radius={7.1} size={.31} color="#b75c42" speed={.17} seed={2.1}/><Planet radius={8.6} size={.75} color="#c69a70" speed={.105} seed={3.1} ring/><Planet radius={10.2} size={.58} color="#8bc5cf" speed={.075} seed={4.1} ring/></group><OrbitControls enablePan={false} minDistance={14} maxDistance={25} minPolarAngle={.85} maxPolarAngle={2.25} rotateSpeed={.35}/></>;
 }
-function SolarSystemContents({ onEnter }) {
-  const system = useRef();
-  useFrame((_, dt) => {
-    if (system.current) system.current.rotation.y += dt * 0.012;
-  });
-  return (
-    <>
-      <color attach="background" args={["#02040c"]} />
-      <fog attach="fog" args={["#02040c", 24, 55]} />
-      <ambientLight intensity={0.34} />
-      <pointLight position={[0, 0, 0]} intensity={190} distance={35} color="#ffb45c" />
-      <directionalLight position={[-7, 8, 9]} intensity={1.5} color="#b8d9ff" />
-      <Stars radius={110} depth={75} count={8500} factor={4.5} saturation={0.25} fade speed={0.35} />
-      <group ref={system}>
-        <mesh>
-          <sphereGeometry args={[0.82, 64, 64]} />
-          <meshBasicMaterial color="#ffb64d" />
-        </mesh>
-        <mesh scale={1.28}>
-          <sphereGeometry args={[0.82, 48, 48]} />
-          <meshBasicMaterial color="#ff8b36" transparent opacity={0.1} side={THREE.BackSide} />
-        </mesh>
-        {[2.1, 3.2, 4.4, 5.65, 7.1, 8.6, 10.2].map((r) => <OrbitPath key={r} radius={r} />)}
-        <Planet radius={2.1} size={0.17} color="#a9a9a2" speed={0.48} seed={0.3} />
-        <Planet radius={3.2} size={0.28} color="#d4a66f" speed={0.31} seed={1.5} />
-        <Suspense fallback={null}><EarthOrbit onEnter={onEnter} /></Suspense>
-        <Planet radius={7.1} size={0.31} color="#b75c42" speed={0.17} seed={2.1} />
-        <Planet radius={8.6} size={0.75} color="#c69a70" speed={0.105} seed={3.1} ring />
-        <Planet radius={10.2} size={0.58} color="#8bc5cf" speed={0.075} seed={4.1} ring />
-      </group>
-      <OrbitControls enablePan={false} minDistance={14} maxDistance={25} minPolarAngle={0.85} maxPolarAngle={2.25} rotateSpeed={0.35} />
-    </>
-  );
+function SolarSystem({onEnter}) { return <Canvas camera={{position:[0,8.5,19],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:false,powerPreference:"high-performance"}}><SolarSystemContents onEnter={onEnter}/></Canvas>; }
+
+function LibraryRoom() {
+  const dust=useRef(),book=useRef();
+  useFrame((state,dt)=>{if(dust.current)dust.current.rotation.y+=dt*.008;if(book.current){book.current.position.y= Math.sin(state.clock.elapsedTime*.7)*.08;book.current.rotation.y=Math.sin(state.clock.elapsedTime*.25)*.07;}});
+  const shelves=Array.from({length:7},(_,i)=>i);
+  return <><color attach="background" args={["#070713"]}/><fog attach="fog" args={["#070713",12,34]}/><ambientLight intensity={.55}/><pointLight position={[0,4,5]} intensity={90} color="#87bfff"/><pointLight position={[-7,2,-5]} intensity={70} color="#b28aff"/><pointLight position={[7,2,-5]} intensity={65} color="#ffbd7b"/><Stars radius={75} depth={55} count={4500} factor={3.2} fade/><group ref={dust}>{Array.from({length:90},(_,i)=><mesh key={i} position={[(Math.sin(i*91.7)*7),(Math.cos(i*17.3)*4),(Math.sin(i*3.1)*8-2)]}><sphereGeometry args={[.012+(i%4)*.004,6,6]}/><meshBasicMaterial color={i%3===0?"#ffd99c":"#9bcfff"} transparent opacity={.65}/></mesh>)}</group>
+    <group position={[-7,0,-4]}>{shelves.map(i=><group key={i} position={[0,-2.2+i*.68,0]}><mesh position={[0,0,-.12]}><boxGeometry args={[3.4,.08,.65]}/><meshStandardMaterial color="#33243a" roughness={.8}/></mesh>{Array.from({length:13},(_,j)=><mesh key={j} position={[-1.48+j*.245,.25,.02]} rotation={[0,0,(j%3-1)*.06]}><boxGeometry args={[.15,.48+(j%4)*.05,.32]}/><meshStandardMaterial color={["#315b78","#79506e","#a2764d","#4c6378","#6a598e"][((i+j)%5)]} roughness={.72}/></mesh>)}</group>)}</group>
+    <group position={[7,0,-4]}>{shelves.map(i=><group key={i} position={[0,-2.2+i*.68,0]}><mesh position={[0,0,-.12]}><boxGeometry args={[3.4,.08,.65]}/><meshStandardMaterial color="#33243a" roughness={.8}/></mesh>{Array.from({length:13},(_,j)=><mesh key={j} position={[-1.48+j*.245,.25,.02]}><boxGeometry args={[.15,.48+(j%4)*.05,.32]}/><meshStandardMaterial color={["#315b78","#79506e","#a2764d","#4c6378","#6a598e"][((i+j+2)%5)]} roughness={.72}/></mesh>)}</group>)}</group>
+    <group ref={book} position={[0,-.1,1]}><mesh position={[-1.02,0,0]} rotation={[0,0,-.035]}><boxGeometry args={[2.02,.12,2.7]}/><meshStandardMaterial color="#50304b" roughness={.5} metalness={.2}/></mesh><mesh position={[1.02,0,0]} rotation={[0,0,.035]}><boxGeometry args={[2.02,.12,2.7]}/><meshStandardMaterial color="#50304b" roughness={.5} metalness={.2}/></mesh><mesh position={[0,.09,0]}><boxGeometry args={[.12,.12,2.72]}/><meshStandardMaterial color="#d3a96e" metalness:.3/></mesh><mesh position={[-1.02,.085,0]} rotation={[0,0,-.025]}><boxGeometry args={[1.92,.035,2.58]}/><meshStandardMaterial color="#f2dfbb" roughness={.9}/></mesh><mesh position={[1.02,.085,0]} rotation={[0,0,.025]}><boxGeometry args={[1.92,.035,2.58]}/><meshStandardMaterial color="#f2dfbb" roughness={.9}/></mesh><mesh position={[0,.15,0]}><torusGeometry args={[2.45,.012,6,100]}/><meshBasicMaterial color="#8bcaff" transparent opacity={.55}/></mesh></group>
+  </>;
 }
-function SolarSystem({ onEnter }) {
-  return (
-    <Canvas camera={{ position: [0, 8.5, 19], fov: 42 }} dpr={[1, 1.6]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}>
-      <SolarSystemContents onEnter={onEnter} />
-    </Canvas>
-  );
+function LibraryScene() { return <Canvas camera={{position:[0,3.2,11.5],fov:42}} dpr={[1,1.5]} gl={{antialias:true,alpha:false}}><LibraryRoom/><OrbitControls enablePan={false} enableZoom={false} minPolarAngle={1.05} maxPolarAngle={1.85} rotateSpeed={.22}/></Canvas>; }
+
+function AvatarScene() {
+  const group=useRef();useFrame((_,dt)=>{if(group.current)group.current.rotation.y+=dt*.18;});
+  return <Canvas camera={{position:[0,0,4.8],fov:35}} dpr={[1,1.5]}><ambientLight intensity={1.1}/><pointLight position={[2,3,4]} intensity={50} color="#8acbff"/><pointLight position={[-2,1,-2]} intensity={25} color="#b99aff"/><group ref={group} position={[0,-.2,0]}><mesh position={[0,.85,0]}><sphereGeometry args={[.55,48,48]}/><meshStandardMaterial color="#c98d70" roughness:.78/></mesh><mesh position={[0,1.18,-.03]} scale={[.57,.3,.55]}><sphereGeometry args={[1,32,32]}/><meshStandardMaterial color="#201b27" roughness:.9/></mesh><mesh position={[0,-.25,0]} scale={[.9,1.05,.48]}><capsuleGeometry args={[.62,.9,8,24]}/><meshStandardMaterial color="#365d82" roughness:.8/></mesh><mesh position={[-.18,.91,.48]}><sphereGeometry args={[.045,12,12]}/><meshBasicMaterial color="#211b1a"/></mesh><mesh position={[.18,.91,.48]}><sphereGeometry args={[.045,12,12]}/><meshBasicMaterial color="#211b1a"/></mesh></group></Canvas>;
 }
-function WorldSceneContents({ onSelect }) {
-  const group = useRef();
-  useFrame((_, dt) => {
-    if (group.current) group.current.rotation.y += dt * 0.025;
-  });
-  return (
-    <>
-      <color attach="background" args={["#030713"]} />
-      <ambientLight intensity={0.5} />
-      <pointLight position={[0, 3, 6]} intensity={55} color="#528fd8" />
-      <Stars radius={90} depth={60} count={5500} factor={4} fade />
-      <group ref={group}>
-        {worlds.map((w, i) => {
-          const a = (i * Math.PI * 2) / worlds.length - Math.PI / 2;
-          const r = 3.15;
-          return (
-            <group key={w.id} position={[Math.cos(a) * r, Math.sin(a) * r * 0.72, 0]}>
-              <mesh
-                onClick={(e) => { e.stopPropagation(); onSelect(w.id); }}
-                onPointerOver={() => { document.body.style.cursor = "pointer"; }}
-                onPointerOut={() => { document.body.style.cursor = "auto"; }}
-              >
-                <sphereGeometry args={[0.47, 48, 48]} />
-                <meshStandardMaterial color={w.color} emissive={w.color} emissiveIntensity={0.24} roughness={0.48} />
-              </mesh>
-              <mesh scale={1.28}>
-                <sphereGeometry args={[0.47, 32, 32]} />
-                <meshBasicMaterial color={w.color} transparent opacity={0.08} side={THREE.BackSide} />
-              </mesh>
-              <Html center distanceFactor={9} position={[0, -0.75, 0]}>
-                <button className="world-planet-label" onClick={() => onSelect(w.id)}>{w.n} · {w.name}</button>
-              </Html>
-            </group>
-          );
-        })}
-      </group>
-      <OrbitControls enablePan={false} enableZoom={false} rotateSpeed={0.3} />
-    </>
-  );
-}
-function WorldScene({ onSelect }) {
-  return (
-    <Canvas camera={{ position: [0, 0, 10], fov: 42 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: false }}>
-      <WorldSceneContents onSelect={onSelect} />
-    </Canvas>
-  );
+
+function BookContent({chapter}) {
+  return <div className="book-content">
+    <div className="book-page-kicker"><span>{chapter.number}</span><i/>{chapter.eyebrow}</div>
+    <h2>{chapter.title}</h2><h3>{chapter.subtitle}</h3><p>{chapter.body}</p>
+    {chapter.bullets&&<ul className="book-bullets">{chapter.bullets.map(item=><li key={item}>{item}</li>)}</ul>}
+    {chapter.projects&&<div className="book-projects">{chapter.projects.map(([name,desc,url])=><a key={name} href={url} target="_blank" rel="noreferrer"><span><b>{name}</b><small>{desc}</small></span><ArrowUpRight size={16}/></a>)}</div>}
+    {chapter.contact&&<div className="book-contact"><a href="mailto:madupojumounika0@gmail.com"><Mail size={16}/> EMAIL ME</a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer"><Linkedin size={16}/> LINKEDIN</a><a href="https://github.com/madupojumounika" target="_blank" rel="noreferrer"><Github size={16}/> GITHUB</a></div>}
+  </div>;
 }
 
 export default function WorldPortfolio() {
-  const [page,setPage]=useState(window.location.pathname==="/world"?"world":"universe"),[transition,setTransition]=useState(false),[active,setActive]=useState(null);
-  const selected=worlds.find(w=>w.id===active);
-  const enterEarth=()=>{if(transition)return;setTransition(true);window.setTimeout(()=>{window.history.pushState({portfolioWorld:true},"","/world");setPage("world");setTransition(false);},1350);};
-  const back=()=>{setActive(null);window.history.pushState({portfolioWorld:false},"","/");setPage("universe");};
-  useEffect(()=>{const key=e=>{if(e.key==="Escape")setActive(null);};const pop=()=>{setActive(null);setPage(window.location.pathname==="/world"?"world":"universe");};window.addEventListener("keydown",key);window.addEventListener("popstate",pop);return()=>{window.removeEventListener("keydown",key);window.removeEventListener("popstate",pop);};},[]);
-  return <main className={page==="universe"?"cosmos-page":"myworld-page"}>
-    <div className="scene-canvas">{page==="universe"?<SolarSystem onEnter={enterEarth}/>:<WorldScene onSelect={setActive}/>}</div>
-    {page==="universe"?<>
-      <div className="cosmos-vignette"/>
-      <div className="cosmos-brand"><span className="brand-star">✦</span><span>MOUNIKA MADUPOJU</span><small>AN INTERACTIVE DIGITAL UNIVERSE</small></div>
-      <div className="cosmos-heading"><span>THE SOLAR SYSTEM</span><h1>A universe<br/>waiting to be <em>explored.</em></h1><p>Find the blue planet. That's where my world begins.</p></div>
-      <div className="cosmos-instruction"><span className="pulse-dot"/> DRAG TO EXPLORE <i/> CLICK EARTH TO ENTER</div>
-      <div className="cosmos-footer">A PERSONAL PORTFOLIO EXPERIENCE <span>01 — THE UNIVERSE</span></div>
-      {transition&&<div className="warp-transition"><div className="warp-ring"/><span>ENTERING EARTH</span></div>}
-    </>:<>
-      <header className="world-header"><button onClick={back} className="back-universe"><ArrowLeft size={15}/> BACK TO UNIVERSE</button><div><b>MOUNIKA'S WORLD</b><small>EXPLORE THE DESTINATIONS</small></div><div className="social-links"><a href="https://github.com/madupojumounika" target="_blank" rel="noreferrer"><Github size={17}/></a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer"><Linkedin size={17}/></a></div></header>
-      <section className="world-intro"><span>WELCOME TO MY WORLD</span><h1>Every world tells<br/><em>a different story.</em></h1><p>Choose a planet to discover one part of my journey.</p></section>
-      <div className="world-hint">SELECT A PLANET TO DISCOVER</div>
-      {selected&&<section className="world-detail"><button className="detail-close" onClick={()=>setActive(null)} aria-label="Close"><X size={18}/></button><span style={{color:selected.color}}>{selected.n} / {selected.name.toUpperCase()}</span><h2>{selected.title}</h2><p>{selected.desc}</p><ul>{selected.facts.map(f=><li key={f}>{f}</li>)}</ul>{selected.links&&<div className="detail-links"><a href="mailto:madupojumounika0@gmail.com"><Mail size={15}/> EMAIL</a><a href="https://www.linkedin.com/in/mounikamadupoju/" target="_blank" rel="noreferrer"><Linkedin size={15}/> LINKEDIN</a></div>}{selected.id==="projects"&&<div className="detail-links"><a href="https://github.com/madupojumounika/paypilot" target="_blank" rel="noreferrer">PAYPILOT <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/medlink" target="_blank" rel="noreferrer">MEDLINK <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/code-mentor" target="_blank" rel="noreferrer">CODE MENTOR <ArrowUpRight size={13}/></a><a href="https://github.com/madupojumounika/careerx" target="_blank" rel="noreferrer">CAREERX <ArrowUpRight size={13}/></a></div>}</section>}
-      <div className="world-footer">© 2026 MOUNIKA MADUPOJU <span>02 — MY WORLD</span></div>
-    </>}
+  const [stage,setStage]=useState("universe"),[transition,setTransition]=useState(false),[chapterIndex,setChapterIndex]=useState(0),[turn,setTurn]=useState("next"),[turnKey,setTurnKey]=useState(0);
+  const timer=useRef(null);
+  const chapter=chapters[chapterIndex];
+  const enterEarth=()=>{if(transition)return;setTransition(true);timer.current=window.setTimeout(()=>{setStage("welcome");setTransition(false);},1250);};
+  const openLibrary=()=>setStage("library");
+  const movePage=(direction)=>{const next=chapterIndex+(direction==="next"?1:-1);if(next<0||next>=chapters.length)return;setTurn(direction);setTurnKey(v=>v+1);window.setTimeout(()=>setChapterIndex(next),180);};
+  const backUniverse=()=>{setStage("universe");setChapterIndex(0);};
+  useEffect(()=>{const onKey=e=>{if(e.key==="Escape"){if(stage==="library")setStage("welcome");else if(stage==="welcome")setStage("universe");}if(stage==="library"&&e.key==="ArrowRight")movePage("next");if(stage==="library"&&e.key==="ArrowLeft")movePage("prev");};const onPop=()=>setStage(window.location.pathname==="/world"?"welcome":"universe");window.addEventListener("keydown",onKey);window.addEventListener("popstate",onPop);return()=>{window.removeEventListener("keydown",onKey);window.removeEventListener("popstate",onPop);if(timer.current)window.clearTimeout(timer.current);};},[stage,chapterIndex]);
+  useEffect(()=>{if(stage==="welcome"||stage==="library"){if(window.location.pathname!=="/world")window.history.pushState({portfolioWorld:true},"","/world");}else if(window.location.pathname!=="/"){window.history.pushState({portfolioWorld:false},"","/");}},[stage]);
+  return <main className={"portfolio-stage stage-"+stage}>
+    {stage==="universe"&&<><div className="scene-canvas"><SolarSystem onEnter={enterEarth}/></div><div className="cosmos-vignette"/><div className="cosmos-brand"><span className="brand-star">✦</span><span>MOUNIKA MADUPOJU</span><small>AN INTERACTIVE DIGITAL UNIVERSE</small></div><div className="cosmos-heading"><span>THE SOLAR SYSTEM</span><h1>A universe<br/>waiting to be <em>explored.</em></h1><p>Find the blue planet. That's where my story begins.</p></div><div className="cosmos-instruction"><span className="pulse-dot"/> DRAG TO EXPLORE <i/> CLICK EARTH TO ENTER</div><div className="cosmos-footer">A PERSONAL PORTFOLIO EXPERIENCE <span>01 — THE UNIVERSE</span></div>{transition&&<div className="warp-transition"><div className="warp-ring"/><span>LANDING ON EARTH</span></div>}</>}
+    {stage==="welcome"&&<><div className="scene-canvas"><LibraryScene/></div><div className="library-vignette"/><button className="welcome-back" onClick={backUniverse}><ArrowLeft size={15}/> BACK TO UNIVERSE</button><div className="welcome-layout"><div className="welcome-copy"><span className="welcome-kicker"><Sparkles size={14}/> A NEW STORY BEGINS</span><h1>Welcome to<br/><em>my world.</em></h1><h2>Hello, I'm Mounika.</h2><p>A curious computer science student, aspiring software developer and creator of little worlds through code. This library holds the chapters of my journey.</p><button className="open-book-cta" onClick={openLibrary}><BookOpen size={17}/> OPEN MY STORYBOOK <ArrowRight size={16}/></button></div><div className="welcome-portraits"><div className="portrait-frame"><div className="portrait-placeholder"><span>MM</span><small>YOUR PHOTO</small></div><div className="portrait-caption">THE PERSON BEHIND THE STORY</div></div><div className="avatar-frame"><AvatarScene/><span>MY 3D AVATAR</span></div></div></div><div className="welcome-footer">MOUNIKA MADUPOJU <span>THE AUTHOR'S LIBRARY</span></div></>}
+    {stage==="library"&&<><div className="scene-canvas"><LibraryScene/></div><div className="library-vignette"/><header className="library-header"><button onClick={()=>setStage("welcome")}><ArrowLeft size={15}/> WELCOME</button><div><b>THE LIBRARY OF MOUNIKA</b><small>TURN THE PAGES · DISCOVER THE STORY</small></div><button onClick={backUniverse}>EXIT <X size={15}/></button></header><div className="library-title"><span>CHAPTER {chapter.number} / 05</span><h1>{chapter.eyebrow}</h1></div><div className="storybook-wrap"><div className="storybook-book"><div className="book-spread"><div className="book-left-page"><div className="book-left-ornament">✦</div><span>THE STORY OF</span><strong>MOUNIKA<br/>MADUPOJU</strong><small>AN OPEN BOOK · AN OPEN UNIVERSE</small><div className="book-left-number">{chapter.number}</div></div><div className="book-right-page"><div className="book-spine-shadow"/><BookContent chapter={chapter}/></div><div key={turnKey} className={"book-turn-leaf "+(turn==="next"?"turn-next":"turn-prev")}><div className="turn-leaf-front"><span>{chapter.number}</span><b>{chapter.title}</b></div><div className="turn-leaf-back"><span>THE NEXT CHAPTER</span><Sparkles size={28}/></div></div></div></div><div className="book-controls"><button onClick={()=>movePage("prev")} disabled={chapterIndex===0}><ArrowLeft size={16}/> PREVIOUS</button><div className="chapter-dots">{chapters.map((c,i)=><button key={c.id} className={i===chapterIndex?"active":""} onClick={()=>{setTurn(i>chapterIndex?"next":"prev");setTurnKey(v=>v+1);setChapterIndex(i);}} aria-label={"Go to "+c.title}/>)}</div><span className="page-count">{chapterIndex+1} / {chapters.length}</span><button onClick={()=>movePage("next")} disabled={chapterIndex===chapters.length-1}>NEXT PAGE <ArrowRight size={16}/></button></div></div><div className="library-footer">USE THE ARROW KEYS OR TURN THE PAGE <span>EVERY CHAPTER IS A NEW WORLD</span></div></>}
   </main>;
 }
