@@ -1,10 +1,6 @@
-import { AppRouter } from "./routes"
-import { ThemeProvider } from "../components/theme-provider"
+import WorldPortfolio from "../WorldPortfolio";
+import "../world.css";
 
 export default function App() {
-  return (
-    <ThemeProvider defaultTheme="dark" storageKey="portfolio-ui-theme">
-      <AppRouter />
-    </ThemeProvider>
-  )
+  return <WorldPortfolio />;
 }
