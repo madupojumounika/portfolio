@@ -56,9 +56,13 @@ function LibraryRoom() {
 }
 function LibraryScene() { return <Canvas camera={{position:[0,3.2,11.5],fov:42}} dpr={[1,1.5]} gl={{antialias:true,alpha:false}}><LibraryRoom/><OrbitControls enablePan={false} enableZoom={false} minPolarAngle={1.05} maxPolarAngle={1.85} rotateSpeed={.22}/></Canvas>; }
 
+function AvatarSceneContents() {
+  const group=useRef();
+  useFrame((_,dt)=>{if(group.current)group.current.rotation.y+=dt*.18;});
+  return <><ambientLight intensity={1.1}/><pointLight position={[2,3,4]} intensity={50} color="#8acbff"/><pointLight position={[-2,1,-2]} intensity={25} color="#b99aff"/><group ref={group} position={[0,-.2,0]}><mesh position={[0,.85,0]}><sphereGeometry args={[.55,48,48]}/><meshStandardMaterial color="#c98d70" roughness={.78}/></mesh><mesh position={[0,1.18,-.03]} scale={[.57,.3,.55]}><sphereGeometry args={[1,32,32]}/><meshStandardMaterial color="#201b27" roughness={.9}/></mesh><mesh position={[0,-.25,0]} scale={[.9,1.05,.48]}><capsuleGeometry args={[.62,.9,8,24]}/><meshStandardMaterial color="#365d82" roughness={.8}/></mesh><mesh position={[-.18,.91,.48]}><sphereGeometry args={[.045,12,12]}/><meshBasicMaterial color="#211b1a"/></mesh><mesh position={[.18,.91,.48]}><sphereGeometry args={[.045,12,12]}/><meshBasicMaterial color="#211b1a"/></mesh></group></>;
+}
 function AvatarScene() {
-  const group=useRef();useFrame((_,dt)=>{if(group.current)group.current.rotation.y+=dt*.18;});
-  return <Canvas camera={{position:[0,0,4.8],fov:35}} dpr={[1,1.5]}><ambientLight intensity={1.1}/><pointLight position={[2,3,4]} intensity={50} color="#8acbff"/><pointLight position={[-2,1,-2]} intensity={25} color="#b99aff"/><group ref={group} position={[0,-.2,0]}><mesh position={[0,.85,0]}><sphereGeometry args={[.55,48,48]}/><meshStandardMaterial color="#c98d70" roughness={.78}/></mesh><mesh position={[0,1.18,-.03]} scale={[.57,.3,.55]}><sphereGeometry args={[1,32,32]}/><meshStandardMaterial color="#201b27" roughness={.9}/></mesh><mesh position={[0,-.25,0]} scale={[.9,1.05,.48]}><capsuleGeometry args={[.62,.9,8,24]}/><meshStandardMaterial color="#365d82" roughness={.8}/></mesh><mesh position={[-.18,.91,.48]}><sphereGeometry args={[.045,12,12]}/><meshBasicMaterial color="#211b1a"/></mesh><mesh position={[.18,.91,.48]}><sphereGeometry args={[.045,12,12]}/><meshBasicMaterial color="#211b1a"/></mesh></group></Canvas>;
+  return <Canvas camera={{position:[0,0,4.8],fov:35}} dpr={[1,1.5]}><AvatarSceneContents/></Canvas>;
 }
 
 function BookContent({chapter}) {
