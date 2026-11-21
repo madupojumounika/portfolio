@@ -1,6 +1,6 @@
-import WorldPortfolio from "../WorldPortfolio";
-import "../world.css";
+import AdventurePortfolio from "../AdventurePortfolio";
+import "../adventure.css";
 
 export default function App() {
-  return <WorldPortfolio />;
+  return <AdventurePortfolio />;
 }
