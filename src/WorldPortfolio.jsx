@@ -52,35 +52,93 @@ function EarthOrbit({ onEnter }) {
     </group>
   );
 }
+function SolarSystemContents({ onEnter }) {
+  const system = useRef();
+  useFrame((_, dt) => {
+    if (system.current) system.current.rotation.y += dt * 0.012;
+  });
+  return (
+    <>
+      <color attach="background" args={["#02040c"]} />
+      <fog attach="fog" args={["#02040c", 24, 55]} />
+      <ambientLight intensity={0.34} />
+      <pointLight position={[0, 0, 0]} intensity={190} distance={35} color="#ffb45c" />
+      <directionalLight position={[-7, 8, 9]} intensity={1.5} color="#b8d9ff" />
+      <Stars radius={110} depth={75} count={8500} factor={4.5} saturation={0.25} fade speed={0.35} />
+      <group ref={system}>
+        <mesh>
+          <sphereGeometry args={[0.82, 64, 64]} />
+          <meshBasicMaterial color="#ffb64d" />
+        </mesh>
+        <mesh scale={1.28}>
+          <sphereGeometry args={[0.82, 48, 48]} />
+          <meshBasicMaterial color="#ff8b36" transparent opacity={0.1} side={THREE.BackSide} />
+        </mesh>
+        {[2.1, 3.2, 4.4, 5.65, 7.1, 8.6, 10.2].map((r) => <OrbitPath key={r} radius={r} />)}
+        <Planet radius={2.1} size={0.17} color="#a9a9a2" speed={0.48} seed={0.3} />
+        <Planet radius={3.2} size={0.28} color="#d4a66f" speed={0.31} seed={1.5} />
+        <Suspense fallback={null}><EarthOrbit onEnter={onEnter} /></Suspense>
+        <Planet radius={7.1} size={0.31} color="#b75c42" speed={0.17} seed={2.1} />
+        <Planet radius={8.6} size={0.75} color="#c69a70" speed={0.105} seed={3.1} ring />
+        <Planet radius={10.2} size={0.58} color="#8bc5cf" speed={0.075} seed={4.1} ring />
+      </group>
+      <OrbitControls enablePan={false} minDistance={14} maxDistance={25} minPolarAngle={0.85} maxPolarAngle={2.25} rotateSpeed={0.35} />
+    </>
+  );
+}
 function SolarSystem({ onEnter }) {
-  const system=useRef();
-  useFrame((_,dt)=>{if(system.current)system.current.rotation.y+=dt*.012;});
-  return <Canvas camera={{position:[0,8.5,19],fov:42}} dpr={[1,1.6]} gl={{antialias:true,alpha:false,powerPreference:"high-performance"}}>
-    <color attach="background" args={["#02040c"]}/><fog attach="fog" args={["#02040c",24,55]}/>
-    <ambientLight intensity={.34}/><pointLight position={[0,0,0]} intensity={190} distance={35} color="#ffb45c"/><directionalLight position={[-7,8,9]} intensity={1.5} color="#b8d9ff"/>
-    <Stars radius={110} depth={75} count={8500} factor={4.5} saturation={.25} fade speed={.35}/>
-    <group ref={system}>
-      <mesh><sphereGeometry args={[.82,64,64]}/><meshBasicMaterial color="#ffb64d"/></mesh>
-      <mesh scale={1.28}><sphereGeometry args={[.82,48,48]}/><meshBasicMaterial color="#ff8b36" transparent opacity={.1} side={THREE.BackSide}/></mesh>
-      {[2.1,3.2,4.4,5.65,7.1,8.6,10.2].map(r=><OrbitPath key={r} radius={r}/>)}
-      <Planet radius={2.1} size={.17} color="#a9a9a2" speed={.48} seed={.3}/>
-      <Planet radius={3.2} size={.28} color="#d4a66f" speed={.31} seed={1.5}/>
-      <Suspense fallback={null}><EarthOrbit onEnter={onEnter}/></Suspense>
-      <Planet radius={7.1} size={.31} color="#b75c42" speed={.17} seed={2.1}/>
-      <Planet radius={8.6} size={.75} color="#c69a70" speed={.105} seed={3.1} ring/>
-      <Planet radius={10.2} size={.58} color="#8bc5cf" speed={.075} seed={4.1} ring/>
-    </group>
-    <OrbitControls enablePan={false} minDistance={14} maxDistance={25} minPolarAngle={.85} maxPolarAngle={2.25} rotateSpeed={.35}/>
-  </Canvas>;
+  return (
+    <Canvas camera={{ position: [0, 8.5, 19], fov: 42 }} dpr={[1, 1.6]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}>
+      <SolarSystemContents onEnter={onEnter} />
+    </Canvas>
+  );
+}
+function WorldSceneContents({ onSelect }) {
+  const group = useRef();
+  useFrame((_, dt) => {
+    if (group.current) group.current.rotation.y += dt * 0.025;
+  });
+  return (
+    <>
+      <color attach="background" args={["#030713"]} />
+      <ambientLight intensity={0.5} />
+      <pointLight position={[0, 3, 6]} intensity={55} color="#528fd8" />
+      <Stars radius={90} depth={60} count={5500} factor={4} fade />
+      <group ref={group}>
+        {worlds.map((w, i) => {
+          const a = (i * Math.PI * 2) / worlds.length - Math.PI / 2;
+          const r = 3.15;
+          return (
+            <group key={w.id} position={[Math.cos(a) * r, Math.sin(a) * r * 0.72, 0]}>
+              <mesh
+                onClick={(e) => { e.stopPropagation(); onSelect(w.id); }}
+                onPointerOver={() => { document.body.style.cursor = "pointer"; }}
+                onPointerOut={() => { document.body.style.cursor = "auto"; }}
+              >
+                <sphereGeometry args={[0.47, 48, 48]} />
+                <meshStandardMaterial color={w.color} emissive={w.color} emissiveIntensity={0.24} roughness={0.48} />
+              </mesh>
+              <mesh scale={1.28}>
+                <sphereGeometry args={[0.47, 32, 32]} />
+                <meshBasicMaterial color={w.color} transparent opacity={0.08} side={THREE.BackSide} />
+              </mesh>
+              <Html center distanceFactor={9} position={[0, -0.75, 0]}>
+                <button className="world-planet-label" onClick={() => onSelect(w.id)}>{w.n} · {w.name}</button>
+              </Html>
+            </group>
+          );
+        })}
+      </group>
+      <OrbitControls enablePan={false} enableZoom={false} rotateSpeed={0.3} />
+    </>
+  );
 }
 function WorldScene({ onSelect }) {
-  const group=useRef();
-  useFrame((_,dt)=>{if(group.current)group.current.rotation.y+=dt*.025;});
-  return <Canvas camera={{position:[0,0,10],fov:42}} dpr={[1,1.5]} gl={{antialias:true,alpha:false}}>
-    <color attach="background" args={["#030713"]}/><ambientLight intensity={.5}/><pointLight position={[0,3,6]} intensity={55} color="#528fd8"/><Stars radius={90} depth={60} count={5500} factor={4} fade/>
-    <group ref={group}>{worlds.map((w,i)=>{const a=i*Math.PI*2/worlds.length-Math.PI/2;const r=3.15;return <group key={w.id} position={[Math.cos(a)*r,Math.sin(a)*r*.72,0]}><mesh onClick={(e)=>{e.stopPropagation();onSelect(w.id);}} onPointerOver={()=>{document.body.style.cursor="pointer";}} onPointerOut={()=>{document.body.style.cursor="auto";}}><sphereGeometry args={[.47,48,48]}/><meshStandardMaterial color={w.color} emissive={w.color} emissiveIntensity={.24} roughness={.48}/></mesh><mesh scale={1.28}><sphereGeometry args={[.47,32,32]}/><meshBasicMaterial color={w.color} transparent opacity={.08} side={THREE.BackSide}/></mesh><Html center distanceFactor={9} position={[0,-.75,0]}><button className="world-planet-label" onClick={()=>onSelect(w.id)}>{w.n} · {w.name}</button></Html></group>;})}</group>
-    <OrbitControls enablePan={false} enableZoom={false} rotateSpeed={.3}/>
-  </Canvas>;
+  return (
+    <Canvas camera={{ position: [0, 0, 10], fov: 42 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: false }}>
+      <WorldSceneContents onSelect={onSelect} />
+    </Canvas>
+  );
 }
 
 export default function WorldPortfolio() {
