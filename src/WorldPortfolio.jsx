@@ -23,12 +23,17 @@ function GlobeMarker({ item, position, onSelect }) {
 }
 
 function Earth({ onSelect }) {
-  const [earthMap, cloudMap] = useLoader(THREE.TextureLoader, [
-    "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
-    "https://threejs.org/examples/textures/planets/earth_clouds_1024.png"
+  const [earthMap, cloudMap, normalMap, nightMap] = useLoader(THREE.TextureLoader, [
+    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg",
+    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png",
+    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg",
+    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_lights_2048.png"
   ]);
   const globe = useRef();
   const clouds = useRef();
+  earthMap.colorSpace = THREE.SRGBColorSpace;
+  cloudMap.colorSpace = THREE.SRGBColorSpace;
+  nightMap.colorSpace = THREE.SRGBColorSpace;
   const indiaPin = useMemo(() => {
     const lat = 20.5937 * Math.PI / 180;
     const lon = 78.9629 * Math.PI / 180;
@@ -46,10 +51,10 @@ function Earth({ onSelect }) {
     if (globe.current) globe.current.rotation.y += delta * 0.075;
     if (clouds.current) clouds.current.rotation.y += delta * 0.092;
   });
-  return <group rotation={[0.04, 1.15, -0.08]}>
+  return <group position={[1.15, -0.05, 0]} scale={1.08} rotation={[0.04, 1.15, -0.08]}>
     <mesh ref={globe} castShadow receiveShadow>
       <sphereGeometry args={[2, 96, 96]} />
-      <meshStandardMaterial map={earthMap} roughness={0.92} metalness={0.02} />
+      <meshStandardMaterial map={earthMap} normalMap={normalMap} normalScale={new THREE.Vector2(0.22, 0.22)} emissiveMap={nightMap} emissive="#fff0c2" emissiveIntensity={0.42} roughness={0.94} metalness={0.02} />
     </mesh>
     <mesh ref={clouds} scale={1.012}>
       <sphereGeometry args={[2, 72, 72]} />
@@ -57,7 +62,11 @@ function Earth({ onSelect }) {
     </mesh>
     <mesh scale={1.075}>
       <sphereGeometry args={[2, 64, 64]} />
-      <meshBasicMaterial color="#4b9dff" transparent opacity={0.09} side={THREE.BackSide} />
+      <meshBasicMaterial color="#4b9dff" transparent opacity={0.11} side={THREE.BackSide} />
+    </mesh>
+    <mesh rotation={[0.35, 0.2, -0.28]}>
+      <torusGeometry args={[2.62, 0.009, 8, 180]} />
+      <meshBasicMaterial color="#4a9bdb" transparent opacity={0.34} />
     </mesh>
     <group position={indiaPin}>
       <mesh><sphereGeometry args={[0.07, 18, 18]} /><meshBasicMaterial color="#fff1b0" /></mesh>
