@@ -81,7 +81,7 @@ function WorldScene({onSelect,travelTarget,quality,paused,uiOpen}){
  return <>
   <color attach="background" args={["#9cb5c2"]}/><fog attach="fog" args={["#9cb5c2",48,135]}/>
   <Sky distance={450000} sunPosition={[30,38,-60]} inclination={.48} azimuth={.22} rayleigh={2.5} turbidity={7} mieCoefficient={.004} mieDirectionalG={.8}/>
-  <ambientLight intensity={quality==="high"?.62:.85}/>
+  <ambientLight intensity={quality === "high" ? 0.62 : 0.85}/>
   <directionalLight position={[-35,55,-20]} intensity={quality==="high"?2.1:1.35} castShadow shadow-mapSize-width={quality==="high"?2048:1024} shadow-mapSize-height={quality==="high"?2048:1024} shadow-camera-far={150} shadow-camera-left={-70} shadow-camera-right={70} shadow-camera-top={70} shadow-camera-bottom={-70}/>
   <hemisphereLight args={["#c6e5ff","#384c37",.7]}/>
   <Terrain/><Forest/>
