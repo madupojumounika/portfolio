@@ -2,7 +2,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Float, Html, PointerLockControls, Sky, Stars } from "@react-three/drei";
 import * as THREE from "three";
-import { ArrowDown, ArrowUpRight, Compass, Github, Linkedin, Mail, Map, Maximize2, MousePointer2, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, Compass, Github, Linkedin, Mail, Map, MousePointer2, Pause, Play, X } from "lucide-react";
 
 const destinations = [
   { id:"about", number:"01", name:"The Origin", type:"ABOUT", position:[-17,0,-13], color:"#8fc7a1", title:"The person behind the journey", intro:"A curious mind, always becoming.", body:"I'm Mounika Madupoju, a computer science student at Bharat Institute of Engineering & Technology, Hyderabad. I enjoy turning ideas into useful digital experiences and learning by building.", facts:["B.Tech CSE (AI & ML) · Expected 2028","CGPA 8.8 / 10","Interested in frontend and full-stack software development"], symbol:"✦" },
@@ -56,9 +56,9 @@ function Landmark({item,onSelect}){
   <mesh position={[0,1.2,0]} onClick={()=>onSelect(item.id)}><cylinderGeometry args={[2.2,2.2,2.4,24]}/><meshBasicMaterial transparent opacity={0} depthWrite={false}/></mesh>
  </group>;
 }
-function WorldScene({onSelect,activeId,travelTarget,quality}){
- const controls=useRef(),keys=useRef({}),cameraStart=useRef(true);
- const {camera,gl}=useThree();
+function WorldScene({onSelect,travelTarget,quality}){
+ const controls=useRef(),keys=useRef({});
+ const {camera}=useThree();
  useEffect(()=>{
   camera.position.set(0,2.1,9);
   const down=e=>{keys.current[e.code]=true;if(e.code==="KeyE"){const p=camera.position;let best=null,dist=Infinity;destinations.forEach(d=>{const n=Math.hypot(p.x-d.position[0],p.z-d.position[2]);if(n<dist){dist=n;best=d}});if(best&&dist<10)onSelect(best.id)}};
@@ -67,7 +67,7 @@ function WorldScene({onSelect,activeId,travelTarget,quality}){
   const blur=()=>{keys.current={}};window.addEventListener("blur",blur);
   return()=>{window.removeEventListener("keydown",down);window.removeEventListener("keyup",up);window.removeEventListener("blur",blur)};
  },[camera,onSelect]);
- useEffect(()=>{if(!travelTarget)return;const d=destinations.find(x=>x.id===travelTarget);if(!d)return;camera.position.set(d.position[0]+0.5,2.2,d.position[2]+8);camera.lookAt(d.position[0],2,d.position[2]);cameraStart.current=false},[travelTarget,camera]);
+ useEffect(()=>{if(!travelTarget)return;const d=destinations.find(x=>x.id===travelTarget);if(!d)return;camera.position.set(d.position[0]+0.5,2.2,d.position[2]+8);camera.lookAt(d.position[0],2,d.position[2]);},[travelTarget,camera]);
  useFrame((_,dt)=>{
   if(!controls.current?.isLocked)return;
   const k=keys.current,forward=(k.KeyW||k.ArrowUp?1:0)-(k.KeyS||k.ArrowDown?1:0),side=(k.KeyD||k.ArrowRight?1:0)-(k.KeyA||k.ArrowLeft?1:0);
@@ -91,7 +91,7 @@ function WorldScene({onSelect,activeId,travelTarget,quality}){
   {destinations.map(d=><Landmark key={d.id} item={d} onSelect={onSelect}/>)}
   {quality!=="low"&&<Stars radius={160} depth={60} count={quality==="high"?1800:600} factor={2} fade speed={.1}/>}
   <Environment preset="forest"/>
-  <PointerLockControls ref={controls} selector="#ow-start" />
+  <PointerLockControls ref={controls} selector="#ow-enter" />
  </>;
 }
 function DetailPanel({item,onClose}){
@@ -112,7 +112,7 @@ function WorldMap({onTravel,onClose}){
 function OpenWorldCanvas({onSelect,travelTarget,quality}){return <Canvas shadows dpr={quality==="high"?[1,1.75]:[1,1.25]} camera={{position:[0,2.1,9],fov:68,near:.1,far:220}} gl={{antialias:quality!=="low",powerPreference:"high-performance"}}><Suspense fallback={null}><WorldScene onSelect={onSelect} travelTarget={travelTarget} quality={quality}/></Suspense></Canvas>}
 
 export default function OpenWorldPortfolio(){
- const [selected,setSelected]=useState(null),[showMap,setShowMap]=useState(false),[travelTarget,setTravelTarget]=useState(null),[quality,setQuality]=useState("balanced"),[started,setStarted]=useState(false),[paused,setPaused]=useState(false),[sound,setSound]=useState(false),[visited,setVisited]=useState([]);
+ const [selected,setSelected]=useState(null),[showMap,setShowMap]=useState(false),[travelTarget,setTravelTarget]=useState(null),[quality,setQuality]=useState("balanced"),[started,setStarted]=useState(false),[paused,setPaused]=useState(false),[visited,setVisited]=useState([]);
  const active=destinations.find(d=>d.id===selected);
  const select=id=>{setSelected(id);setVisited(v=>v.includes(id)?v:[...v,id])};
  const travel=id=>{setSelected(null);setTravelTarget(id);select(id)};
@@ -121,8 +121,8 @@ export default function OpenWorldPortfolio(){
   <div className="ow-canvas"><OpenWorldCanvas onSelect={select} travelTarget={travelTarget} quality={quality}/></div>
   <div className="ow-vignette"/>
   <header className="ow-header"><a className="ow-brand" href="#top">MM<span>✦</span><i>MOUNIKA MADUPOJU / DIGITAL WORLD</i></a><nav><button onClick={()=>setShowMap(true)}><Map size={15}/> WORLD MAP</button><a href="https://github.com/madupojumounika" target="_blank" rel="noreferrer"><Github size={15}/> GITHUB</a><a href="https://linkedin.com/in/mounikamadupoju" target="_blank" rel="noreferrer"><Linkedin size={15}/> LINKEDIN</a><a href="mailto:madupojumounika0@gmail.com"><Mail size={15}/> CONTACT</a></nav></header>
-  {!started&&<div className="ow-intro"><span>AN INTERACTIVE 3D PORTFOLIO</span><h1>Explore my<br/><em>world.</em></h1><p>Five destinations. One journey. Walk through the places that tell my story, discover what I've built and see where I'm headed next.</p><button id="ow-start" onClick={()=>setStarted(true)}><Play size={15} fill="currentColor"/> ENTER THE WORLD <ArrowUpRight size={15}/></button><small><MousePointer2 size={13}/> CLICK ENTER, THEN MOVE WITH W A S D · MOUSE TO LOOK</small></div>}
-  {started&&<div className="ow-hud"><div className="ow-location"><Compass size={15}/><span>OPEN WORLD <b>·</b> EXPLORE FREELY</span></div><div className="ow-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span><span><MousePointer2 size={13}/> LOOK</span><span><kbd>E</kbd> INTERACT</span><button onClick={()=>setShowMap(true)}><Map size={14}/> MAP</button></div></div>}
+  {!started&&<div className="ow-intro"><span>AN INTERACTIVE 3D PORTFOLIO</span><h1>Explore my<br/><em>world.</em></h1><p>Five destinations. One journey. Walk through the places that tell my story, discover what I've built and see where I'm headed next.</p><button id="ow-enter" onClick={()=>setStarted(true)}><Play size={15} fill="currentColor"/> ENTER THE WORLD <ArrowUpRight size={15}/></button><small><MousePointer2 size={13}/> CLICK ENTER, THEN MOVE WITH W A S D · MOUSE TO LOOK</small></div>}
+  {started&&<div className="ow-hud"><div className="ow-location"><Compass size={15}/><span>OPEN WORLD <b>·</b> EXPLORE FREELY</span></div><div className="ow-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span><span><MousePointer2 size={13}/> LOOK</span><span><kbd>E</kbd> INTERACT</span><button onClick={()=>setShowMap(true)}><Map size={14}/> MAP</button><button id="ow-enter"><Play size={13}/> WALK</button></div></div>}
   {started&&<div className="ow-discovery"><span>DISCOVERED</span><b>{visited.length.toString().padStart(2,"0")} <i>/ 05</i></b><div>{destinations.map(d=><i key={d.id} className={visited.includes(d.id)?"found":""} style={{"--dot":d.color}}/>)}</div></div>}
   {started&&<div className="ow-bottom-tools"><button onClick={()=>setShowMap(true)}><Map size={14}/> DESTINATIONS</button><label>GRAPHICS <select value={quality} onChange={e=>setQuality(e.target.value)}><option value="low">LOW</option><option value="balanced">BALANCED</option><option value="high">HIGH</option></select></label><button onClick={()=>setPaused(v=>!v)}>{paused?<Play size={14}/>:<Pause size={14}/>} {paused?"RESUME":"PAUSE"}</button></div>}
   {active&&<DetailPanel item={active} onClose={()=>setSelected(null)}/>}
