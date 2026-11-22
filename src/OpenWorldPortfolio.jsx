@@ -56,7 +56,7 @@ function Landmark({item,onSelect}){
   <mesh position={[0,1.2,0]} onClick={()=>onSelect(item.id)}><cylinderGeometry args={[2.2,2.2,2.4,24]}/><meshBasicMaterial transparent opacity={0} depthWrite={false}/></mesh>
  </group>;
 }
-function WorldScene({onSelect,travelTarget,quality,paused}){
+function WorldScene({onSelect,travelTarget,quality,paused,uiOpen}){
  const controls=useRef(),keys=useRef({});
  const {camera}=useThree();
  useEffect(()=>{
@@ -68,9 +68,9 @@ function WorldScene({onSelect,travelTarget,quality,paused}){
   return()=>{window.removeEventListener("keydown",down);window.removeEventListener("keyup",up);window.removeEventListener("blur",blur)};
  },[camera,onSelect]);
  useEffect(()=>{if(!travelTarget)return;const d=destinations.find(x=>x.id===travelTarget);if(!d)return;camera.position.set(d.position[0]+0.5,2.2,d.position[2]+8);camera.lookAt(d.position[0],2,d.position[2]);},[travelTarget,camera]);
- useEffect(()=>{if(paused)controls.current?.unlock()},[paused]);
+ useEffect(()=>{if(paused||uiOpen)controls.current?.unlock()},[paused,uiOpen]);
  useFrame((_,dt)=>{
-  if(paused||!controls.current?.isLocked)return;
+  if(paused||uiOpen||!controls.current?.isLocked)return;
   const k=keys.current,forward=(k.KeyW||k.ArrowUp?1:0)-(k.KeyS||k.ArrowDown?1:0),side=(k.KeyD||k.ArrowRight?1:0)-(k.KeyA||k.ArrowLeft?1:0);
   if(!forward&&!side)return;
   const dir=new THREE.Vector3();camera.getWorldDirection(dir);dir.y=0;dir.normalize();
@@ -110,7 +110,7 @@ function DetailPanel({item,onClose}){
 function WorldMap({onTravel,onClose}){
  return <div className="ow-map-backdrop" onClick={onClose}><section className="ow-map" onClick={e=>e.stopPropagation()}><div className="ow-map-head"><div><span>WORLD ATLAS</span><h2>Choose your destination</h2></div><button onClick={onClose}><X/></button></div><div className="ow-map-grid">{destinations.map(d=><button key={d.id} onClick={()=>{onTravel(d.id);onClose()}}><i style={{background:d.color}}>{d.number}</i><span><b>{d.name}</b><small>{d.type}</small></span><ArrowUpRight size={16}/></button>)}</div><p>Travel instantly or explore the paths on foot.</p></section></div>;
 }
-function OpenWorldCanvas({onSelect,travelTarget,quality,paused}){return <Canvas shadows dpr={quality==="high"?[1,1.75]:[1,1.25]} camera={{position:[0,2.1,9],fov:68,near:.1,far:220}} gl={{antialias:quality!=="low",powerPreference:"high-performance"}}><Suspense fallback={null}><WorldScene onSelect={onSelect} travelTarget={travelTarget} quality={quality} paused={paused}/></Suspense></Canvas>}
+function OpenWorldCanvas({onSelect,travelTarget,quality,paused,uiOpen}){return <Canvas shadows dpr={quality==="high"?[1,1.75]:[1,1.25]} camera={{position:[0,2.1,9],fov:68,near:.1,far:220}} gl={{antialias:quality!=="low",powerPreference:"high-performance"}}><Suspense fallback={null}><WorldScene onSelect={onSelect} travelTarget={travelTarget} quality={quality} paused={paused} uiOpen={uiOpen}/></Suspense></Canvas>}
 
 export default function OpenWorldPortfolio(){
  const [selected,setSelected]=useState(null),[showMap,setShowMap]=useState(false),[travelTarget,setTravelTarget]=useState(null),[quality,setQuality]=useState("balanced"),[started,setStarted]=useState(false),[paused,setPaused]=useState(false),[visited,setVisited]=useState([]);
@@ -119,11 +119,11 @@ export default function OpenWorldPortfolio(){
  const travel=id=>{setSelected(null);setTravelTarget(id);select(id)};
  useEffect(()=>{const esc=e=>{if(e.key==="Escape"){setSelected(null);setShowMap(false);setPaused(false)}};window.addEventListener("keydown",esc);return()=>window.removeEventListener("keydown",esc)},[]);
  return <main className="open-world">
-  <div className="ow-canvas"><OpenWorldCanvas onSelect={select} travelTarget={travelTarget} quality={quality} paused={paused}/></div>
+  <div className="ow-canvas"><OpenWorldCanvas onSelect={select} travelTarget={travelTarget} quality={quality} paused={paused} uiOpen={showMap||!!selected}/></div>
   <div className="ow-vignette"/>
   <header className="ow-header"><a className="ow-brand" href="#top">MM<span>✦</span><i>MOUNIKA MADUPOJU / DIGITAL WORLD</i></a><nav><button onClick={()=>setShowMap(true)}><Map size={15}/> WORLD MAP</button><a href="https://github.com/madupojumounika" target="_blank" rel="noreferrer"><Github size={15}/> GITHUB</a><a href="https://linkedin.com/in/mounikamadupoju" target="_blank" rel="noreferrer"><Linkedin size={15}/> LINKEDIN</a><a href="mailto:madupojumounika0@gmail.com"><Mail size={15}/> CONTACT</a></nav></header>
-  {!started&&<div className="ow-intro"><span>AN INTERACTIVE 3D PORTFOLIO</span><h1>Explore my<br/><em>world.</em></h1><p>Five destinations. One journey. Walk through the places that tell my story, discover what I've built and see where I'm headed next.</p><button id="ow-enter" onClick={()=>setStarted(true)}><Play size={15} fill="currentColor"/> ENTER THE WORLD <ArrowUpRight size={15}/></button><small><MousePointer2 size={13}/> CLICK ENTER, THEN MOVE WITH W A S D · MOUSE TO LOOK</small></div>}
-  {started&&<div className="ow-hud"><div className="ow-location"><Compass size={15}/><span>OPEN WORLD <b>·</b> EXPLORE FREELY</span></div><div className="ow-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span><span><MousePointer2 size={13}/> LOOK</span><span><kbd>E</kbd> INTERACT</span><button onClick={()=>setShowMap(true)}><Map size={14}/> MAP</button><button id="ow-enter"><Play size={13}/> WALK</button></div></div>}
+  <div className={"ow-intro "+(started?"ow-intro-started":"")}><span>AN INTERACTIVE 3D PORTFOLIO</span><h1>Explore my<br/><em>world.</em></h1><p>Five destinations. One journey. Walk through the places that tell my story, discover what I've built and see where I'm headed next.</p><button id="ow-enter" onClick={()=>{setStarted(true);setSelected(null);setShowMap(false);setPaused(false)}}><Play size={15} fill="currentColor"/> {started?"WALK":"ENTER THE WORLD"} <ArrowUpRight size={15}/></button><small><MousePointer2 size={13}/> CLICK ENTER, THEN MOVE WITH W A S D · MOUSE TO LOOK</small></div>
+  {started&&<div className="ow-hud"><div className="ow-location"><Compass size={15}/><span>OPEN WORLD <b>·</b> EXPLORE FREELY</span></div><div className="ow-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span><span><MousePointer2 size={13}/> LOOK</span><span><kbd>E</kbd> INTERACT</span><button onClick={()=>setShowMap(true)}><Map size={14}/> MAP</button></div></div>}
   {started&&<div className="ow-discovery"><span>DISCOVERED</span><b>{visited.length.toString().padStart(2,"0")} <i>/ 05</i></b><div>{destinations.map(d=><i key={d.id} className={visited.includes(d.id)?"found":""} style={{"--dot":d.color}}/>)}</div></div>}
   {started&&<div className="ow-bottom-tools"><button onClick={()=>setShowMap(true)}><Map size={14}/> DESTINATIONS</button><label>GRAPHICS <select value={quality} onChange={e=>setQuality(e.target.value)}><option value="low">LOW</option><option value="balanced">BALANCED</option><option value="high">HIGH</option></select></label><button onClick={()=>setPaused(v=>!v)}>{paused?<Play size={14}/>:<Pause size={14}/>} {paused?"RESUME":"PAUSE"}</button></div>}
   {active&&<DetailPanel item={active} onClose={()=>setSelected(null)}/>}
