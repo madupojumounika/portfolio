@@ -17,3 +17,8 @@ kbd{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 
 .ow-footer{position:absolute;z-index:3;left:5%;right:5%;bottom:13px;display:flex;justify-content:space-between;color:#d1ddd2;font:7px 'DM Mono';letter-spacing:.12em;pointer-events:none}
 @media(max-width:760px){.ow-header{height:62px;padding:0 16px}.ow-brand{font-size:14px}.ow-brand i{display:none}.ow-header nav{gap:4px}.ow-header nav a,.ow-header nav button{padding:8px;font-size:0}.ow-header nav svg{width:15px;height:15px}.ow-intro{left:22px;top:22%;width:calc(100% - 44px)}.ow-intro h1{font-size:64px}.ow-intro p{max-width:330px;font-size:12px}.ow-hud{top:77px;left:12px;right:12px;align-items:flex-start;gap:8px}.ow-location{font-size:7px;padding:8px}.ow-controls{gap:7px;padding:8px;font-size:0}.ow-controls span{font-size:0}.ow-controls kbd{font-size:7px}.ow-controls button{font-size:7px}.ow-discovery{top:auto;right:12px;bottom:76px;padding:10px}.ow-discovery>b{font-size:20px}.ow-bottom-tools{left:12px;bottom:38px;gap:10px;padding:8px}.ow-bottom-tools button,.ow-bottom-tools label{font-size:7px}.ow-detail{left:12px;right:12px;top:auto;bottom:50px;width:auto;max-height:65vh;padding:24px}.ow-detail h2{font-size:27px}.ow-map{padding:20px}.ow-map-grid{grid-template-columns:1fr}.ow-map-head h2{font-size:23px}.ow-footer{left:12px;right:12px;font-size:6px}.ow-footer span:last-child{display:none}}
 @media(prefers-reduced-motion:reduce){.ow-detail{animation:none}}
+
+.ow-intro-started{left:auto;right:5%;top:158px;width:auto}
+.ow-intro-started>span,.ow-intro-started>h1,.ow-intro-started>p,.ow-intro-started>small{display:none}
+.ow-intro-started>button{margin:0;padding:10px 13px;font-size:8px}
+@media(max-width:760px){.ow-intro-started{left:auto;right:12px;top:132px;width:auto}}
