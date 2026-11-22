@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Float, Html, PointerLockControls, Sky, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { ArrowDown, ArrowUpRight, Compass, Github, Linkedin, Mail, Map, Maximize2, MousePointer2, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
@@ -46,7 +46,7 @@ function Landmark({item,onSelect}){
  const [x,_,z]=item.position;
  return <group position={[x,0,z]}>
   <mesh position={[0,.12,0]} receiveShadow><cylinderGeometry args={[4.8,5.5,.24,48]}/><meshStandardMaterial color="#657365" roughness={.9}/></mesh>
-  <mesh position={[0,2.1,0]} castShadow><cylinderGeometry args={[.2,.25,4.1,12]}/><meshStandardMaterial color="#c4a77c" metalness:.15} /></mesh>
+  <mesh position={[0,2.1,0]} castShadow><cylinderGeometry args={[.2,.25,4.1,12]}/><meshStandardMaterial color="#c4a77c" metalness={0.15} /></mesh>
   <mesh position={[0,4.25,0]} castShadow><torusGeometry args={[1.45,.12,12,48]}/><meshStandardMaterial color={item.color} emissive={item.color} emissiveIntensity={.7} metalness={.35}/></mesh>
   <mesh position={[0,4.25,0]}><sphereGeometry args={[.7,24,24]}/><meshBasicMaterial color={item.color} transparent opacity={.13}/></mesh>
   <mesh position={[0,.42,0]}><cylinderGeometry args={[2.4,3.2,.38,32]}/><meshStandardMaterial color="#343d3a" roughness={.8}/></mesh>
